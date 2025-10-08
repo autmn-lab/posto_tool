@@ -1,0 +1,32 @@
+{
+  "state_vars": ["price", "trend", "vol", "shock"],
+  "constants": {
+    "dt": 0.01,
+    "mu": 0.05,
+    "lambda": 0.2,
+    "theta": 0.1
+  },
+  "ranges": {
+    "ep_price": [-0.1, 0.1],
+    "ep_trend": [-0.05, 0.05],
+    "ep_vol": [-0.02, 0.02],
+    "ep_shock": [-1.0, 1.0]
+  },
+  "equations": {
+    "price'": "price + dt * (mu * price + trend * vol) + ep_price",
+    "trend'": "trend + dt * (-lambda * trend + shock) + ep_trend",
+    "vol'": "vol + dt * (-theta * vol + 0.1 * sqrt(abs(shock))) + ep_vol",
+    "shock'": "shock + dt * (-0.5 * shock) + ep_shock"
+  },
+  "constraints": [
+    { "state": "price", "op": "ge", "const": 300.0 },
+    { "state": "trend", "op": "ge", "const": 50.0 },
+    { "state": "vol", "op": "ge", "const": 10.0 },
+    { "state": "shock", "op": "ge", "const": 50.0 },
+    { "state": "price", "op": "le", "const": 0.0 },
+    { "state": "trend", "op": "le", "const": -50.0 },
+    { "state": "vol", "op": "le", "const": 0.0 },
+    { "state": "shock", "op": "le", "const": -50.0 }
+  ]
+}
+

@@ -58,4 +58,14 @@ class msg:
     UNDERLINE = '\033[4m'
 
 
+def info(s):    print(f"{msg.OKCYAN}[INFO]{msg.ENDC} {s}")
+def note(s):    print(f"{msg.OKBLUE}[INFO]{msg.ENDC} {s}")
+def ok(s):      print(f"{msg.OKGREEN}[SUCCESS]{msg.ENDC} {s}")
+def warn(s):    print(f"{msg.WARNING}[WARN]{msg.ENDC} {s}")
+def die(s, hint=None, code=2):
+    print(f"{msg.FAIL}[ERROR]{msg.ENDC} {s}")
+    if hint:
+        print(f"{msg.WARNING}[HINT]{msg.ENDC} {hint}")
+    sys.exit(code)
+
 

@@ -1,0 +1,29 @@
+{
+  "state_vars": ["prey", "pred", "env"],
+  "constants": {
+    "dt": 0.1,
+    "growth": 1.5,
+    "predation": 0.02,
+    "conversion": 0.1,
+    "decay": 0.05
+  },
+  "ranges": {
+    "ep_prey": [0.0, 0.5],
+    "ep_pred": [0.0, 0.3],
+    "ep_env": [-0.5, 0.5]
+  },
+  "equations": {
+    "prey'": "prey + dt * (growth * prey - predation * prey * pred) + ep_prey",
+    "pred'": "pred + dt * (conversion * predation * prey * pred - decay * pred) + ep_pred",
+    "env'": "env + dt * (-0.1 * env + 0.01 * prey - 0.02 * pred) + ep_env"
+  },
+  "constraints": [
+    { "state": "prey", "op": "ge", "const": 200.0 },
+    { "state": "prey", "op": "le", "const": 0.0 },
+    { "state": "pred", "op": "ge", "const": 100.0 },
+    { "state": "pred", "op": "le", "const": 0.0 },
+    { "state": "env", "op": "ge", "const": 50.0 },
+    { "state": "env", "op": "le", "const": -50.0 }
+  ]
+}
+

@@ -16,17 +16,12 @@ class ANN:
       def __init__(self, model_path):
         if not os.path.isfile(model_path):
             raise FileNotFoundError(f"Model not found at {model_path}")
-        self.model = load_model(model_path)
+        self.model = load_model(model_path, compile=False, safe_mode=False)
 
-def modelNextState(self, state):
+def getNextState(self, state):
 
-        x_cur = copy.copy(state[0])
-        y_cur = copy.copy(state[1])
 
-        inp = np.array([[x_cur, y_cur]], dtype=np.float32)  # shape (1,2)
-        out = self.model.predict(inp, verbose=0).reshape(-1)
+        out = self.model.predict(state, verbose=0).reshape(-1)
 
-        if out.size < 2:
-            raise RuntimeError("Model must output two values (x_next, y_next)")
-        nextState = (float(out[0]), float(out[1]))
+        nextState = out
         return nextState

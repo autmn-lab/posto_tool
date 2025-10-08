@@ -1,0 +1,38 @@
+{
+  "state_vars": ["S", "E", "I", "R", "V"],
+  "constants": {
+    "dt": 0.1,
+    "beta": 0.3,
+    "sigma": 0.2,
+    "gamma": 0.1,
+    "delta": 0.05,
+    "season": 0.1
+  },
+  "ranges": {
+    "ep_S": [-10.0, 10.0],
+    "ep_E": [-5.0, 5.0],
+    "ep_I": [-5.0, 5.0],
+    "ep_R": [-2.0, 2.0],
+    "ep_V": [-2.0, 2.0]
+  },
+  "equations": {
+    "S'": "S + dt * (-beta * S * I - delta * S + season * sin(0.01*t)) + ep_S",
+    "E'": "E + dt * (beta * S * I - sigma * E) + ep_E",
+    "I'": "I + dt * (sigma * E - gamma * I) + ep_I",
+    "R'": "R + dt * (gamma * I - delta * R) + ep_R",
+    "V'": "V + dt * (delta * (S + R) - 0.01 * V) + ep_V"
+  },
+  "constraints": [
+    { "state": "S", "op": "ge", "const": 1000.0 },
+    { "state": "E", "op": "ge", "const": 500.0 },
+    { "state": "I", "op": "ge", "const": 500.0 },
+    { "state": "R", "op": "ge", "const": 1000.0 },
+    { "state": "V", "op": "ge", "const": 500.0 },
+    { "state": "S", "op": "le", "const": 0.0 },
+    { "state": "E", "op": "le", "const": 0.0 },
+    { "state": "I", "op": "le", "const": 0.0 },
+    { "state": "R", "op": "le", "const": 0.0 },
+    { "state": "V", "op": "le", "const": 0.0 }
+  ]
+}
+

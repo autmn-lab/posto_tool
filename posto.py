@@ -1,3 +1,5 @@
+#comprehensive test suite with multiple dimensions, uncertainities injected in multiple places, multiple degrees.
+
 #!/usr/bin/env python3
 """
 Posto: Scripts to generate logs and check safety of trajectories
@@ -7,7 +9,7 @@ Both commands require a mode (`--mode`) and a corresponding model file (`--model
 
 Usage:
     posto.py generateLog --log=<logfile> --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path> --prob=<prob> --dtlog=<dtlog>
-    posto.py checkSafety --log=<logfile> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path> --unsafe=<unsafe> --state=<state> --op=<op>
+    posto.py checkSafety --log=<logfile> --mode=<mode> --model_path=<model_path>
 
 Options:
     --log=<logfile>        Path to the log file to read from or write to.
@@ -19,7 +21,7 @@ Options:
                            Example: --init="[0.8,1],[0.8,1]"
 
     --timestamp=<timestamp>
-                           Time horizon (integer, >= 0) for the simulation or safety check.
+                           Time horizon (integer, >= 0) for the simulation.
 
     --mode=<mode>          The mode to use to generate the log/trajectories. Must be one of:
                              - equation : uses an equation-based function provided in the json file (.json)
@@ -30,15 +32,6 @@ Options:
                              - if --mode=ann      → must be a .h5 file of the trained ann model
                            The file must exist and be accessible.
 
-    --unsafe=<unsafe>      [checkSafety only] Unsafe threshold value (float).
-
-    --state=<state>        [checkSafety only] Index of the state variable to evaluate (integer, >= 0).
-
-    --op=<op>              [checkSafety only] Operator used in the safety condition.
-                           Accepted forms:
-                             - Symbolic: <, <=, >, >=, ==, !=
-                             - Word form: lt, le, gt, ge, eq, ne
-                           Example: --op=le   (equivalent to <=)
 
 Commands:
     generateLog            Generates a trajectory log based on the given initial set, time horizon,
@@ -52,67 +45,116 @@ Examples:
     posto.py generateLog --log=traj.log --init="[0.8,1],[0.8,1]" --timestamp=50 --mode=ann --model_path=model_path.h5
 
     # Generate a log using an equation operator
-    posto.py generateLog --log=traj.log --init="[0.5,0.9],[0.5,0.9]" --timestamp=30 --mode=equation --model_path=operator.txt
+    posto.py generateLog --log=traj.log --init="[0.5,0.9],[0.5,0.9]" --timestamp=30 --mode=equation --model_path=operator.json
 
     # Check safety of a log
-    posto.py checkSafety --log=traj.log --timestamp=50 --mode=ann --model_path=model_path.h5 --unsafe=0.5 --state=1 --op=le
+    posto.py checkSafety --log=traj.log --mode=ann --model_path=model_path.h5
 """
 
 
 from docopt import docopt
-import ast, os, sys, time
+import ast, os, sys, time, re
 from System import *
 
-# ---------- helpers: colored logging ----------
-def info(s):    print(f"{msg.OKCYAN}[INFO]{msg.ENDC} {s}")
-def note(s):    print(f"{msg.OKBLUE}[INFO]{msg.ENDC} {s}")
-def ok(s):      print(f"{msg.OKGREEN}[SUCCESS]{msg.ENDC} {s}")
-def warn(s):    print(f"{msg.WARNING}[WARN]{msg.ENDC} {s}")
-def die(s, hint=None, code=2):
-    print(f"{msg.FAIL}[ERROR]{msg.ENDC} {s}")
-    if hint:
-        print(f"{msg.WARNING}[HINT]{msg.ENDC} {hint}")
-    sys.exit(code)
 
-# ---------- parsing & validation ----------
 def parse_initset(init_str):
     """
+    Parse --init into a list of [lo, hi] float pairs for n dimensions.
+
     Accepts formats like:
-      "[0.8,1],[0.8,1]"
-      " [ 0.8 , 1.0 ] , [ 0.8 , 1.0 ] "
-    Returns: ([x1,x2], [y1,y2]) as floats
+      "[[0.8, 1.0], [0.8, 1.0], [0.8, 1.0]]"
+      "[0.8, 1.0], [0.8, 1.0], [0.8, 1.0]"   (no outer brackets)
+      " [  [0.8,1], [0.8,1] ]  "             (extra spaces/newlines)
+
+    Returns:
+      List[List[float, float]]
+
+    Raises:
+      ValueError with a helpful message if input is malformed.
     """
     if init_str is None:
-        die("Missing --init.",
-            hint='Provide it in format: "[0.8,1],[0.8,1]"')
+        raise ValueError("--init is required")
 
-    try:
-        parts = init_str.split("],")
-        if len(parts) != 2:
-            raise ValueError("Expected two bracketed ranges separated by a comma.")
-        set1 = ast.literal_eval(parts[0].strip() + "]")
-        set2 = ast.literal_eval(parts[1].strip())
-        if (not isinstance(set1, (list, tuple)) or len(set1) != 2 or
-            not isinstance(set2, (list, tuple)) or len(set2) != 2):
-            raise ValueError("Each set must have exactly two numbers.")
-        set1 = [float(set1[0]), float(set1[1])]
-        set2 = [float(set2[0]), float(set2[1])]
-        return (set1, set2)
-    except Exception as e:
-        die(
-            f"Invalid --init format: {init_str!r}.",
-            hint='Use like: "[0.8,1],[0.8,1]" (two bracketed pairs separated by a comma).'
+    s = init_str.strip()
+
+    # Sometimes users paste "init=..." — strip that if present
+    s = re.sub(r'^\s*init\s*=\s*', '', s, flags=re.IGNORECASE).strip()
+
+    # First try parsing as-is
+    def _try_eval(txt):
+        try:
+            return ast.literal_eval(txt)
+        except Exception:
+            return None
+
+    obj = _try_eval(s)
+
+    # If that fails, try wrapping in outer brackets (handles no-outer-brackets case)
+    if obj is None:
+        obj = _try_eval(f'[{s}]')
+        if obj is None:
+            raise ValueError(
+                "Could not parse --init. Expected something like: "
+                "'[[lo, hi], [lo, hi], ...]' or '[lo, hi], [lo, hi]'. "
+                f"Got: {init_str!r}"
+            )
+
+    # Normalize tuples to lists
+    if isinstance(obj, tuple):
+        obj = list(obj)
+
+    # If user provided a single pair like [lo, hi], wrap it to make [[lo, hi]]
+    if (isinstance(obj, list)
+        and len(obj) == 2
+        and all(isinstance(x, (int, float)) for x in obj)):
+        obj = [obj]
+
+    # Validate structure: list of pairs
+    if not (isinstance(obj, list) and all(
+        isinstance(p, (list, tuple)) and len(p) == 2 for p in obj
+    )):
+        raise ValueError(
+            "Parsed --init is not a list of [lo, hi] pairs. "
+            f"Got: {obj!r}"
         )
+
+    # Coerce to floats and validate ordering
+    out = []
+    for i, pair in enumerate(obj, start=1):
+        lo, hi = pair
+        try:
+            lo_f = float(lo)
+            hi_f = float(hi)
+        except Exception:
+            raise ValueError(
+                f"--init pair #{i} contains non-numeric values: {pair!r}"
+            )
+        if lo_f > hi_f:
+            raise ValueError(
+                f"--init pair #{i} has lo > hi: {lo_f} > {hi_f}"
+            )
+        out.append([lo_f, hi_f])
+    if len(out) == 0:
+        raise ValueError("--init parsed to an empty list of ranges")
+    return out
+
 
 def require_path(path_str, flag_name="--log"):
     if path_str is None or str(path_str).strip() == "":
         die(f"Missing {flag_name}.",
             hint=f"Provide a valid path via {flag_name}=<file>.")
+
     # Ensure parent directory exists (if one is specified)
     parent = os.path.dirname(os.path.abspath(path_str))
     if parent and not os.path.isdir(parent):
         die(f"Directory does not exist for {flag_name}: {parent!r}.",
             hint="Create the directory or change the path.")
+
+    # Enforce file extension
+    if not str(path_str).endswith(".lg"):
+        die(f"Invalid file type for {flag_name}: {path_str!r}.",
+            hint="The log file must use the .lg extension.")
+
     return path_str
 
 def require_int(val_str, flag_name, min_value=None, max_value=None):
@@ -216,51 +258,23 @@ if __name__ == '__main__':
         prob = require_float(args['--prob'], "--prob", min_value=0)
         dtlog = require_float(args['--dtlog'], "--dtlog", min_value=0)
 
-
-        info("Starting log generation...")
-        note(f"Initial set: {init}")
-        note(f"Time horizon: {timestamp}")
-        note(f"Mode: {mode}")
-        note(f"Model file: {model_path}")
-        note(f"Logging probability: {prob}")
-        note(f"Delta log: {dtlog}")
-        note(f"Output log path: {log}")
-        
-
-        start = time.time()
-        try:
+        my_sys.generateLog(init, timestamp, prob, dtlog)
+        """ try:
             my_sys.generateLog(init, timestamp, prob, dtlog)
         except Exception as e:
             die(f"Log generation failed: {e!r}",
                 hint="Check your inputs and file permissions.")
-        elapsed = time.time() - start
-
-        ok("Log generated successfully.")
-        ok(f"Stored at: {msg.UNDERLINE}{log}{msg.ENDC}")
-        print(f"{msg.HEADER}[INFO]{msg.ENDC} Time taken: {msg.BOLD}{elapsed:.4f} sec{msg.ENDC}")
-
+ """
     elif args['checkSafety']:
-        timestamp = require_int(args['--timestamp'], "--timestamp", min_value=0)
-        unsafe = require_float(args['--unsafe'], "--unsafe")
-        state = require_int(args['--state'], "--state", min_value=0)
-        op = require_op(args['--op'])
+        my_sys.checkSafety()
 
-        info("Running safety check...")
-        note(f"Log path: {log}")
-        note(f"Time horizon: {timestamp}")
-        note(f"Unsafe threshold: {unsafe}")
-        note(f"State index: {state}")
-        note(f"Operator: {op}")
-        note(f"Mode: {mode}")
-        note(f"Model File: {model_path}")
-
-        try:
+        """ try:
             my_sys.checkSafety(timestamp, unsafe, state, op)
             ok("Safety check completed.")
         except Exception as e:
             die(f"Safety check failed: {e!r}",
                 hint="Verify the log file exists and input parameters are correct.")
-
+ """
     else:
         warn("No command provided. Use 'generateLog' or 'checkSafety'.")
         print(__doc__)

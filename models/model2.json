@@ -1,0 +1,33 @@
+{
+  "state_vars": ["theta1", "theta2", "omega1", "omega2"],
+  "constants": {
+    "dt": 0.005,
+    "k1": 1.2,
+    "k2": 0.8,
+    "d1": 0.05,
+    "d2": 0.07,
+    "g": 9.81,
+    "L": 1.0
+  },
+  "ranges": {
+    "ep_theta": [-0.002, 0.002],
+    "ep_omega": [-0.01, 0.01]
+  },
+  "equations": {
+    "theta1'": "theta1 + dt * omega1 + ep_theta",
+    "theta2'": "theta2 + dt * omega2 + ep_theta",
+    "omega1'": "omega1 + dt * (-k1*theta1 - d1*omega1 + (g/L)*sin(theta2)) + ep_omega",
+    "omega2'": "omega2 + dt * (-k2*theta2 - d2*omega2 + (g/L)*sin(theta1)) + ep_omega"
+  },
+  "constraints": [
+    { "state": "theta1", "op": "ge", "const": 2.0 },
+    { "state": "theta1", "op": "le", "const": -2.0 },
+    { "state": "theta2", "op": "ge", "const": 2.0 },
+    { "state": "theta2", "op": "le", "const": -2.0 },
+    { "state": "omega1", "op": "ge", "const": 5.0 },
+    { "state": "omega1", "op": "le", "const": -5.0 },
+    { "state": "omega2", "op": "ge", "const": 5.0 },
+    { "state": "omega2", "op": "le", "const": -5.0 }
+  ]
+}
+

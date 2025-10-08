@@ -1,0 +1,34 @@
+{
+  "state_vars": ["room1", "room2", "room3", "heater", "load"],
+  "constants": {
+    "dt": 0.05,
+    "k_r": 0.1,
+    "k_h": 0.5,
+    "decay_h": 0.1
+  },
+  "ranges": {
+    "ep_r": [-0.1, 0.1],
+    "ep_h": [-0.05, 0.05],
+    "ep_l": [-0.2, 0.2]
+  },
+  "equations": {
+    "room1'": "room1 + dt * (-k_r*(room1 - room2) + k_h*heater) + ep_r",
+    "room2'": "room2 + dt * (-k_r*(room2 - room1) - k_r*(room2 - room3) + k_h*heater) + ep_r",
+    "room3'": "room3 + dt * (-k_r*(room3 - room2) + k_h*heater) + ep_r",
+    "heater'": "heater + dt * (-decay_h*heater + 0.1*load) + ep_h",
+    "load'": "load + dt * (-0.05*load + 0.3*sin(room1)) + ep_l"
+  },
+  "constraints": [
+    { "state": "room1", "op": "ge", "const": 30.0 },
+    { "state": "room2", "op": "ge", "const": 30.0 },
+    { "state": "room3", "op": "ge", "const": 30.0 },
+    { "state": "heater", "op": "ge", "const": 5.0 },
+    { "state": "load", "op": "ge", "const": 8.0 },
+    { "state": "room1", "op": "le", "const": 10.0 },
+    { "state": "room2", "op": "le", "const": 10.0 },
+    { "state": "room3", "op": "le", "const": 10.0 },
+    { "state": "heater", "op": "le", "const": 0.0 },
+    { "state": "load", "op": "le", "const": -8.0 }
+  ]
+}
+

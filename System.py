@@ -1,6 +1,7 @@
 import os,sys,copy
 import time
 import ast
+import json
 
 PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
@@ -12,9 +13,7 @@ from lib.TrajSafety import *
 from lib.JFBF import *
 from lib.Visualize import *
 from lib.Equation import *
-#from lib.ANN import *
-
-
+from lib.ANN import *
 
 class System:
 
@@ -22,18 +21,59 @@ class System:
     dtlog = None
 
 
-    def __init__(self, log_path, mode, model_path):
-        self.log_path = log_path
-        if mode=="equation":
+    def __init__(self, log_path, mode=None, model_path=None):
+
+        self.log_path   = log_path
+        self.mode       = mode
+        self.model_path = model_path
+
+        # Select the appropriate model based on mode
+        if mode == "equation":
             self.model = Equation(model_path)
-        #elif mode=="ann":
-            #self.model = ANN(model_path)
+        elif mode == "ann":
+            self.model = ANN(model_path)
+
+        # Directory for storing images
+        self.imgdir = os.path.join(os.path.dirname(self.log_path), "img")
+
+        # Parse the constraints from the JSON model
+        self.constraints = None
+        if mode == "equation" and model_path:
+            with open(model_path, "r") as f:
+                spec = json.load(f)
+
+            cons_list = spec.get("constraints")
+            if cons_list:
+                state_vars = spec.get("state_vars", [])
+                processed = []
+                for item in cons_list:
+                    # Each constraint can be a dict or a list/tuple
+                    if isinstance(item, dict):
+                        # Extract state index/name and operator; handle 0.0 correctly
+                        st = item.get("state_idx") if item.get("state_idx") is not None else item.get("state")
+                        op = item.get("op")       if item.get("op")       is not None else item.get("inequal")
+                        # Prefer 'const' over 'value'; avoid falsey-or fallthrough
+                        val = item.get("const") if item.get("const") is not None else item.get("value")
+                    else:
+                        st, op, val = item  # assume (state, op, constant) sequence
+
+                    # Convert state name to numeric index
+                    if isinstance(st, str):
+                        st = state_vars.index(st)
+
+                    # Ensure the constant is defined
+                    if val is None:
+                        raise ValueError(f"Constraint {item!r} is missing a numeric constant")
+
+                    processed.append((int(st), op, float(val)))
+
+                self.constraints = processed
+
+
 
     def getNextState(self, state):
-
         nextState = self.model.getNextState(state)
         return nextState
-    
 
     def getTraj(self, initState, T):
         traj=[]
@@ -41,6 +81,10 @@ class System:
         for t in range(T):
             traj.append(state)
             nextState=self.getNextState(state)
+            if nextState is None:
+                print(f"{msg.WARNING}[WARN]{msg.ENDC} Overflow encountered — using current state as final and stopping.")
+                # Overflow detected; stop processing
+                break
             state=copy.copy(nextState)
         return traj
     
@@ -48,21 +92,17 @@ class System:
     def getRandomTrajs(self,initSet,T,K):
         trajs=[]
         for i in range(K):
-            x_init_rand=random.uniform(initSet[0][0], initSet[0][1])
+            """ x_init_rand=random.uniform(initSet[0][0], initSet[0][1])
             y_init_rand=random.uniform(initSet[1][0], initSet[1][1])
             traj=self.getTraj((x_init_rand,y_init_rand),T)
-            trajs.append(traj)
-        return trajs
-
-
-    def getLog(self, initSet,T):
-        trajs=self.getRandomTrajs(initSet,T,1)
-        
-        logger=GenLog(trajs[0])
-        log=logger.genLog(System.dtlog, System.prob)
-
-        viz = Visualize(VIZ, msg)
-        viz.vizTrajs(trajs,log[0])
+            trajs.append(traj) """
+            point = []                           
+            for dim in initSet:                 
+                value = random.uniform(dim[0], dim[1])   
+                point.append(value)          
+            traj = self.getTraj(tuple(point), T) 
+            trajs.append(traj)                   
+        return trajs   
 
 
     def getValidTrajs(self,initSet,T,K,logUn):
@@ -76,54 +116,27 @@ class System:
             valTrajs=valTrajs+valTrajsIt
             if len(valTrajs)>=K:
                 break
-        print("Total Trajectories Generated: ",totTrajs*100,"; Valid Trajectories: ",len(valTrajs))
+        print(f"{msg.HEADER}Total Trajectories Generated:{msg.ENDC} "
+                f"{msg.BOLD}{totTrajs * 100}{msg.ENDC} ; "
+                f"{msg.OKCYAN}Valid Trajectories:{msg.ENDC} "
+                f"{msg.BOLD}{len(valTrajs)}{msg.ENDC}")
         return valTrajs
 
-
-    def isSafe(self, initSet,T,unsafe,state,op,Bi,ci):
-        ts=time.time()
-        trajsL=self.getRandomTrajs(initSet,T,1)
-        logger=GenLog(trajsL[0])
-        logUn=logger.genLog(System.dtlog, System.prob)[0]
-        K=JFB(Bi,ci).getNumberOfSamples()
-        isSafe=True
-        totTrajs=0
-        valTrajObj=TrajValidity(logUn)
-        valTrajs=[]
-        safeTrajs=[]
-        unsafeTrajs=[]
-        safeTrajObj=TrajSafety([state,op,unsafe])
-        (safeSamps,unsafeSamps)=safeTrajObj.getSafeUnsafeLog(logUn)
-        if len(unsafeSamps)==0 or False:
-            while len(valTrajs)<=K:
-                trajs=self.getRandomTrajs(logUn[0][0],T,100)
-                totTrajs+=1
-                valTrajsIt,inValTrajsIt=valTrajObj.getValTrajs(trajs)
-                valTrajs=valTrajs+valTrajsIt
-                print(totTrajs*100,len(valTrajs))
-                # Check safety of valTrajsIt
-                (safeTrajs,unsafeTrajs)=safeTrajObj.getSafeUnsafeTrajs(valTrajsIt)
-                if len(unsafeTrajs)>0:
-                    isSafe=False
-                    break
-                ############################
-
-                if len(valTrajs)>=K:
-                    break
-        else:
-            isSafe=False
-        
-        ts=time.time()-ts
-        print("Time Taken: ",ts)
-        print("Safety: ",isSafe)
-        print("[Trajs] Safe, Unsafe: ",len(safeTrajs),len(unsafeTrajs))
-        print("[Log] Safe, Unsafe: ",len(safeSamps),len(unsafeSamps))
-        print("Total Trajectories Generated: ",totTrajs*100,"; Valid Trajectories: ",len(valTrajs))
-        return (ts,isSafe)
     
         
     def generateLog(self, init_set, T, prob, dtlog):
 
+        start = time.time()
+
+        info("Starting log generation...")
+        note(f"Initial set: {init_set}")
+        note(f"Time horizon: {T}")
+        note(f"Mode: {self.mode}")
+        note(f"Model file: {self.model_path}")
+        note(f"Logging probability: {prob}")
+        note(f"Delta log: {dtlog}")
+        note(f"Output log path: {self.log_path}")
+     
         System.prob = prob
         System.dtlog = dtlog
 
@@ -134,14 +147,27 @@ class System:
         os.makedirs(os.path.dirname(self.log_path) or ".", exist_ok=True)
         with open(self.log_path, "w") as f:
             for box, t in logUn:
-                x_lo, x_hi = box[0]
-                y_lo, y_hi = box[1]
-                f.write(f"t={int(t)}: [[{x_lo:.6f}, {x_hi:.6f}], [{y_lo:.6f}, {y_hi:.6f}]]\n")
+                interval_strs = []
+                for (lo, hi) in box:
+                    interval_strs.append(f"[{lo:.6f}, {hi:.6f}]")
+                intervals_line = ", ".join(interval_strs)
+                f.write(f"t={int(t)}: [{intervals_line}]\n")
+
+        viz = Visualize(VIZ, msg, self.imgdir)
+        viz.vizLog(logUn, save=True)
+        viz.vizTrajLog(trajsL, logUn, save=True, name_prefix="traj_log_pair")
 
 
-    def readLog(self):
+        ok("Log generated successfully.")
+        ok(f"Stored at: {msg.UNDERLINE}{self.log_path}{msg.ENDC}")
+        elapsed = time.time() - start
+        print(f"{msg.HEADER}[INFO]{msg.ENDC} Time taken: {msg.BOLD}{elapsed:.4f} sec{msg.ENDC}")
         
+
+
+    def readLog(self):  
         logUn = []
+        max_t = 0
         with open(self.log_path, "r") as f:
             for line in f:
                 # Each line in the log looks like: t=0: [[x_lo,x_hi],[y_lo,y_hi]]
@@ -150,14 +176,30 @@ class System:
                 # Use ast.literal_eval to safely parse the box lists
                 box = ast.literal_eval(box_part.strip())
                 logUn.append((box, t))
-        return logUn
+                if t > max_t:
+                    max_t = t
+        return logUn, max_t
 
 
-    def checkSafety( self, T, unsafe, state, op,):
+    def checkSafety(self):
+        info("Running safety check...")
+        note(f"Log path: {self.log_path}")
+        note(f"Mode: {self.mode}")
+        note(f"Model File: {self.model_path}")
 
-        ts = time.time()
-        logUn = self.readLog()
+        # Ensure constraints have been loaded
+        if not self.constraints:
+            raise RuntimeError("No constraints defined in the model; cannot perform safety check.")
 
+        # Create the safety checker with all constraints
+        safety_checker = TrajSafety(self.constraints)
+        note("Using constraints from JSON model:")
+        for st_idx, oper, bound in self.constraints:
+            note(f"  state[{st_idx}] {oper} {bound}")
+
+        ts_start = time.time()
+        logUn, T = self.readLog()
+        T = T + 1
         K = JFB(B, c).getNumberOfSamples()
         isSafe = True
         totTrajs = 0
@@ -165,46 +207,99 @@ class System:
         valTrajs = []
         safeTrajs = []
         unsafeTrajs = []
-        safeTrajObj = TrajSafety([state, op, unsafe])
 
-        (safeSamps, unsafeSamps) = safeTrajObj.getSafeUnsafeLog(logUn)
+        # Check the log samples for immediate violations
+        safeSamps, unsafeSamps = safety_checker.getSafeUnsafeLog(logUn)
 
-        if len(unsafeSamps) == 0 or False:
-            # Generate random trajectories from the lower-left corner of the first box
+        # Determine which state crossed its bound for plotting
+        plot_state = None
+        plot_unsafe = None
+        if unsafeSamps:
+            # Find the first violated constraint in the first unsafe sample
+            sample = unsafeSamps[0]
+            box = sample[0]
+            for st_idx, op, const in self.constraints:
+                lo, hi = box[st_idx]
+                if (op == 'ge' and hi >= const) or \
+                (op == 'le' and lo <= const) or \
+                (op == 'gt' and hi > const)  or \
+                (op == 'lt' and lo < const):
+                    plot_state, plot_unsafe = st_idx, const
+                    break
+
+        if len(unsafeSamps) == 0:
+            # Generate and test random trajectories
             while len(valTrajs) <= K:
                 trajs = self.getRandomTrajs(logUn[0][0], T, 100)
                 totTrajs += 1
                 valTrajsIt, inValTrajsIt = valTrajObj.getValTrajs(trajs)
-                print(totTrajs * 100, len(valTrajs))
-                # Check safety of valTrajsIt
-                (safeTrajs, unsafeTrajs) = safeTrajObj.getSafeUnsafeTrajs(valTrajsIt)
-                if len(unsafeTrajs) > 0:
+                print(f"{msg.HEADER}Total Trajectories Generated:{msg.ENDC} "
+                    f"{msg.BOLD}{totTrajs * 100}{msg.ENDC} ; "
+                    f"{msg.OKCYAN}Valid Trajectories:{msg.ENDC} "
+                    f"{msg.BOLD}{len(valTrajs)}{msg.ENDC}")
+                safe_it, unsafe_it = safety_checker.getSafeUnsafeTrajs(valTrajsIt)
+                safeTrajs += safe_it
+                unsafeTrajs += unsafe_it
+                if unsafe_it:
                     isSafe = False
+                    # If we haven't chosen plot_state yet, find which state crossed in this trajectory
+                    if plot_state is None:
+                        traj = unsafe_it[0]      # the first unsafe trajectory
+                        for t, state_vec in enumerate(traj):
+                            for st_idx, op, const in self.constraints:
+                                val = state_vec[st_idx]
+                                if (op == 'ge' and val >= const) or \
+                                (op == 'le' and val <= const) or \
+                                (op == 'gt' and val >  const) or \
+                                (op == 'lt' and val <  const):
+                                    plot_state, plot_unsafe = st_idx, const
+                                    break
+                            if plot_state is not None:
+                                break
                     break
-                # accumulate valid trajectories
-                valTrajs = valTrajs + valTrajsIt
+                valTrajs += valTrajsIt
                 if len(valTrajs) >= K:
                     break
         else:
             isSafe = False
 
-        ts = time.time() - ts
-        print("Time Taken: ", ts)
-        print("Safety: ", isSafe)
-        print("[Trajs] Safe, Unsafe: ", len(safeTrajs), len(unsafeTrajs))
-        print("[Log] Safe, Unsafe: ", len(safeSamps), len(unsafeSamps))
-        print("Total Trajectories Generated: ", totTrajs * 100, "; Valid Trajectories: ", len(valTrajs))
+        ts = time.time() - ts_start
+        print(f"{msg.BOLD}Time Taken:{msg.ENDC} {msg.OKCYAN}{ts}{msg.ENDC}")
 
-        # Plotting logic remains unchanged
-        sv = False
-        viz = Visualize(VIZ, msg)
-        if len(unsafeSamps) > 0:
-            viz.vizLogsSafeUnsafe2D(T, safeSamps, unsafeSamps, unsafe, state, save=sv, name="JetSafeUnsafeLogs")
-        if len(unsafeTrajs) > 0 and len(safeTrajs) > 0:
-            viz.vizTrajsSafeUnsafe2D([safeTrajs[0]], [unsafeTrajs[0]], safeSamps, unsafeSamps,
-                                    unsafe, state, save=sv, name="JetSafeUnsafeTrajs")
-        elif len(safeTrajs) > 0 and len(unsafeTrajs) == 0:
-            viz.vizTrajsVal2D(safeTrajs, logUn, unsafe, state, save=sv, name="JetSafeTrajs")
-        elif len(unsafeTrajs) > 0:
-            viz.vizTrajsVal2D(unsafeTrajs, logUn, unsafe, state, save=True, name="JetUnsafeTrajs")
+        # Reporting results
+        if isSafe:
+            print(f"{msg.BOLD}Safety:{msg.ENDC} {msg.OKGREEN}{msg.BOLD}SAFE{msg.ENDC}")
+        else:
+            print(f"{msg.BOLD}Safety:{msg.ENDC} {msg.FAIL}{msg.BOLD}UNSAFE{msg.ENDC}")
+        print(f"{msg.OKBLUE}[Trajs]{msg.ENDC} {msg.OKGREEN}Safe:{msg.ENDC} {len(safeTrajs)} "
+            f"{msg.FAIL}Unsafe:{msg.ENDC} {len(unsafeTrajs)}")
+        print(f"{msg.OKCYAN}[Log]{msg.ENDC} {msg.OKGREEN}Safe:{msg.ENDC} {len(safeSamps)} "
+            f"{msg.FAIL}Unsafe:{msg.ENDC} {len(unsafeSamps)}")
+        print(f"{msg.HEADER}Total Trajectories Generated:{msg.ENDC} {msg.BOLD}{totTrajs * 100}{msg.ENDC} ; "
+            f"{msg.OKCYAN}Valid Trajectories:{msg.ENDC} {msg.BOLD}{len(valTrajs)}{msg.ENDC}")
+        
+        viz = Visualize(VIZ, msg, self.imgdir)
+        if safeTrajs:
+            viz.vizTrajs(safeTrajs, logUn, save=True, name="SafeTrajs3D")
+        if unsafeTrajs:
+            viz.vizTrajs(unsafeTrajs, logUn, save=True, name="UnsafeTrajs3D")
 
+
+        # Visualization: plot only the state that violated its bound
+        if plot_state is not None and plot_unsafe is not None:
+            viz = Visualize(VIZ, msg, self.imgdir)
+            if unsafeSamps:
+                viz.vizLogsSafeUnsafe2D(T, safeSamps, unsafeSamps,
+                                        plot_unsafe, plot_state, save=True,
+                                        name="SafeUnsafeLogs")
+            if unsafeTrajs and safeTrajs:
+                viz.vizTrajsSafeUnsafe2D([safeTrajs[0]], [unsafeTrajs[0]],
+                                        safeSamps, unsafeSamps,
+                                        plot_unsafe, plot_state, save=True,
+                                        name="SafeUnsafeTrajs")
+            elif safeTrajs and not unsafeTrajs:
+                viz.vizTrajsVal2D(safeTrajs, logUn, plot_unsafe,
+                                plot_state, save=True, name="SafeTrajs")
+            elif unsafeTrajs:
+                viz.vizTrajsVal2D(unsafeTrajs, logUn, plot_unsafe,
+                                plot_state, save=True, name="UnsafeTrajs")
