@@ -16,7 +16,7 @@
     "q4'": "q4 + dt * (-damp*q4 + q5) + ep_q",
     "q5'": "q5 + dt * (-damp*q5 - q1) + ep_q"
   },
-  "constraints": [
+  "safety_constraints": [
     { "state": "q1", "op": "ge", "const": 2.0 },
     { "state": "q2", "op": "ge", "const": 2.0 },
     { "state": "q3", "op": "ge", "const": 2.0 },

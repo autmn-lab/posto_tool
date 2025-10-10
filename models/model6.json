@@ -17,7 +17,7 @@
     "I'": "I + dt * ((V - alpha * T) / L) + ep_I",
     "T'": "T + dt * (0.1 * I - 0.05 * T) + ep_T"
   },
-  "constraints": [
+  "safety_constraints": [
     { "state": "V", "op": "ge", "const": 15.0 },
     { "state": "V", "op": "le", "const": -15.0 },
     { "state": "I", "op": "ge", "const": 5.0 },

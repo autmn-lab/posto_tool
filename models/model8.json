@@ -19,7 +19,7 @@
     "C'": "C + dt * (k2*B**2 - k3*C) + ep_C",
     "D'": "D + dt * (k3*C - k4*D) + ep_D"
   },
-  "constraints": [
+  "safety_constraints": [
     { "state": "A", "op": "ge", "const": 100.0 },
     { "state": "B", "op": "ge", "const": 100.0 },
     { "state": "C", "op": "ge", "const": 50.0 },

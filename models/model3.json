@@ -17,7 +17,7 @@
     "pred'": "pred + dt * (conversion * predation * prey * pred - decay * pred) + ep_pred",
     "env'": "env + dt * (-0.1 * env + 0.01 * prey - 0.02 * pred) + ep_env"
   },
-  "constraints": [
+  "safety_constraints": [
     { "state": "prey", "op": "ge", "const": 200.0 },
     { "state": "prey", "op": "le", "const": 0.0 },
     { "state": "pred", "op": "ge", "const": 100.0 },

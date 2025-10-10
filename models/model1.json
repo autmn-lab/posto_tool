@@ -16,7 +16,7 @@
     "y'": "y + dt * (beta * x**2 - gamma * z) + ep_y",
     "z'": "z + dt * (x - y + gamma * z**2) + ep_z"
   },
-  "constraints": [
+  "safety_constraints": [
     { "state": "x", "op": "ge", "const": 10.0 },
     { "state": "x", "op": "le", "const": -10.0 },
     { "state": "y", "op": "ge", "const": 8.0 },

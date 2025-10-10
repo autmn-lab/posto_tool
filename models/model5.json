@@ -18,7 +18,7 @@
     "demand'": "demand + dt * (0.1*(demand_mean - demand)) + ep_dem",
     "backlog'": "backlog + dt * (demand - production) + ep_back"
   },
-  "constraints": [
+  "safety_constraints": [
     { "state": "inventory", "op": "le", "const": 0.0 },
     { "state": "production", "op": "le", "const": 0.0 },
     { "state": "demand", "op": "ge", "const": 50.0 },

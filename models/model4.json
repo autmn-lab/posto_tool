@@ -18,7 +18,7 @@
     "heater'": "heater + dt * (-decay_h*heater + 0.1*load) + ep_h",
     "load'": "load + dt * (-0.05*load + 0.3*sin(room1)) + ep_l"
   },
-  "constraints": [
+  "safety_constraints": [
     { "state": "room1", "op": "ge", "const": 30.0 },
     { "state": "room2", "op": "ge", "const": 30.0 },
     { "state": "room3", "op": "ge", "const": 30.0 },
