@@ -21,7 +21,7 @@ class System:
     dtlog = None
 
 
-    def __init__(self, log_path, mode=None, model_path=None):
+    def __init__(self, log_path, mode=None, model_path=None, states=None, constraints=None):
 
         self.log_path   = log_path
         self.mode       = mode
@@ -37,14 +37,17 @@ class System:
         self.imgdir = os.path.join(os.path.dirname(self.log_path), "img")
 
         # Parse the constraints from the JSON model
-        self.constraints = None
+        self.constraints = constraints
+        self.state_names = states
         if mode == "equation" and model_path:
             with open(model_path, "r") as f:
                 spec = json.load(f)
+            
+            state_vars = spec.get("state_vars", [])
+            self.state_names = state_vars
 
-            cons_list = spec.get("constraints")
+            cons_list = spec.get("safety_constraints")
             if cons_list:
-                state_vars = spec.get("state_vars", [])
                 processed = []
                 for item in cons_list:
                     # Each constraint can be a dict or a list/tuple
@@ -92,10 +95,6 @@ class System:
     def getRandomTrajs(self,initSet,T,K):
         trajs=[]
         for i in range(K):
-            """ x_init_rand=random.uniform(initSet[0][0], initSet[0][1])
-            y_init_rand=random.uniform(initSet[1][0], initSet[1][1])
-            traj=self.getTraj((x_init_rand,y_init_rand),T)
-            trajs.append(traj) """
             point = []                           
             for dim in initSet:                 
                 value = random.uniform(dim[0], dim[1])   
@@ -123,6 +122,32 @@ class System:
         return valTrajs
 
     
+    def behaviour(self, init_set, T):
+        start = time.time()
+
+        info("Starting behavior generation...")
+        note(f"Initial set: {init_set}")
+        note(f"Time horizon: {T}")
+        note(f"Mode: {self.mode}")
+        note(f"Model file: {self.model_path}")
+        trajs = self.getRandomTrajs(init_set, T, 20)
+
+        prefix = "behaviorPair"
+        nStates = len(trajs[0][0])
+        for (i, j) in combinations(range(nStates), 2):
+            pair_trajs = []
+            for traj in trajs:
+                new_traj = [ [point[i], point[j]] for point in traj ]
+                pair_trajs.append(new_traj)
+            viz = Visualize(VIZ, msg, self.imgdir, self.state_names)
+            viz.vizTrajs(i, j, pair_trajs, logUn=None, save=True,
+                        name=f"{prefix}_{i}_{j}")
+        ok("Behavior generated successfully.")
+        ok(f"Stored at: {msg.UNDERLINE}{self.imgdir}{msg.ENDC}")
+        elapsed = time.time() - start
+        print(f"{msg.HEADER}[INFO]{msg.ENDC} Time taken: {msg.BOLD}{elapsed:.4f} sec{msg.ENDC}")
+
+
         
     def generateLog(self, init_set, T, prob, dtlog):
 
@@ -153,7 +178,7 @@ class System:
                 intervals_line = ", ".join(interval_strs)
                 f.write(f"t={int(t)}: [{intervals_line}]\n")
 
-        viz = Visualize(VIZ, msg, self.imgdir)
+        viz = Visualize(VIZ, msg, self.imgdir, self.state_names)
         viz.vizLog(logUn, save=True)
         viz.vizTrajLog(trajsL, logUn, save=True, name_prefix="traj_log_pair")
 
@@ -211,26 +236,16 @@ class System:
         # Check the log samples for immediate violations
         safeSamps, unsafeSamps = safety_checker.getSafeUnsafeLog(logUn)
 
-        # Determine which state crossed its bound for plotting
-        plot_state = None
-        plot_unsafe = None
-        if unsafeSamps:
-            # Find the first violated constraint in the first unsafe sample
-            sample = unsafeSamps[0]
-            box = sample[0]
-            for st_idx, op, const in self.constraints:
-                lo, hi = box[st_idx]
-                if (op == 'ge' and hi >= const) or \
-                (op == 'le' and lo <= const) or \
-                (op == 'gt' and hi > const)  or \
-                (op == 'lt' and lo < const):
-                    plot_state, plot_unsafe = st_idx, const
-                    break
-
         if len(unsafeSamps) == 0:
             # Generate and test random trajectories
             while len(valTrajs) <= K:
-                trajs = self.getRandomTrajs(logUn[0][0], T, 100)
+                try:
+                    # Generate K valid trajectories from the initial log box
+                    trajs = self.getRandomTrajs(logUn[0][0], T, 100)
+                except OverflowError as e:
+                    print(f"{msg.FAIL}[ERROR]{msg.ENDC} {e}")
+                    print(f"{msg.WARNING}[HINT]{msg.ENDC} Aborting safety check because the system state blew up.")
+                    return
                 totTrajs += 1
                 valTrajsIt, inValTrajsIt = valTrajObj.getValTrajs(trajs)
                 print(f"{msg.HEADER}Total Trajectories Generated:{msg.ENDC} "
@@ -242,20 +257,6 @@ class System:
                 unsafeTrajs += unsafe_it
                 if unsafe_it:
                     isSafe = False
-                    # If we haven't chosen plot_state yet, find which state crossed in this trajectory
-                    if plot_state is None:
-                        traj = unsafe_it[0]      # the first unsafe trajectory
-                        for t, state_vec in enumerate(traj):
-                            for st_idx, op, const in self.constraints:
-                                val = state_vec[st_idx]
-                                if (op == 'ge' and val >= const) or \
-                                (op == 'le' and val <= const) or \
-                                (op == 'gt' and val >  const) or \
-                                (op == 'lt' and val <  const):
-                                    plot_state, plot_unsafe = st_idx, const
-                                    break
-                            if plot_state is not None:
-                                break
                     break
                 valTrajs += valTrajsIt
                 if len(valTrajs) >= K:
@@ -277,29 +278,43 @@ class System:
             f"{msg.FAIL}Unsafe:{msg.ENDC} {len(unsafeSamps)}")
         print(f"{msg.HEADER}Total Trajectories Generated:{msg.ENDC} {msg.BOLD}{totTrajs * 100}{msg.ENDC} ; "
             f"{msg.OKCYAN}Valid Trajectories:{msg.ENDC} {msg.BOLD}{len(valTrajs)}{msg.ENDC}")
-        
-        viz = Visualize(VIZ, msg, self.imgdir)
-        if safeTrajs:
-            viz.vizTrajs(safeTrajs, logUn, save=True, name="SafeTrajs3D")
-        if unsafeTrajs:
-            viz.vizTrajs(unsafeTrajs, logUn, save=True, name="UnsafeTrajs3D")
 
+        viz = Visualize(VIZ, msg, self.imgdir, self.state_names)
 
-        # Visualization: plot only the state that violated its bound
-        if plot_state is not None and plot_unsafe is not None:
-            viz = Visualize(VIZ, msg, self.imgdir)
+        n_states = len(logUn[0][0]) if logUn else 0
+
+        for state_idx in range(n_states):
+            bounds = [const for (st, op, const) in self.constraints if st == state_idx]
+
             if unsafeSamps:
-                viz.vizLogsSafeUnsafe2D(T, safeSamps, unsafeSamps,
-                                        plot_unsafe, plot_state, save=True,
-                                        name="SafeUnsafeLogs")
+                viz.vizLogsSafeUnsafe2D(
+                    T, safeSamps, unsafeSamps,
+                    bounds, state_idx, save=True,
+                    name=f"SafeUnsafeLogs_state{state_idx}"
+                )
+
             if unsafeTrajs and safeTrajs:
-                viz.vizTrajsSafeUnsafe2D([safeTrajs[0]], [unsafeTrajs[0]],
-                                        safeSamps, unsafeSamps,
-                                        plot_unsafe, plot_state, save=True,
-                                        name="SafeUnsafeTrajs")
+                viz.vizTrajsSafeUnsafe2D(
+                    [safeTrajs[0]], [unsafeTrajs[0]],
+                    safeSamps, unsafeSamps,
+                    bounds, state_idx, save=True,
+                    name=f"SafeUnsafeTrajs_state{state_idx}"
+                )
             elif safeTrajs and not unsafeTrajs:
-                viz.vizTrajsVal2D(safeTrajs, logUn, plot_unsafe,
-                                plot_state, save=True, name="SafeTrajs")
+                viz.vizTrajsVal2D(
+                    safeTrajs, logUn, bounds,
+                    state_idx, save=True,
+                    name=f"SafeTrajs_state{state_idx}"
+                )
+                viz.vizTrajsSafeUnsafe2D(
+                    [safeTrajs[0]], None,
+                    safeSamps, None,
+                    bounds, state_idx, save=True,
+                    name=f"SafeUnsafeTrajs_state{state_idx}"
+                )
             elif unsafeTrajs:
-                viz.vizTrajsVal2D(unsafeTrajs, logUn, plot_unsafe,
-                                plot_state, save=True, name="UnsafeTrajs")
+                viz.vizTrajsVal2D(
+                    unsafeTrajs, logUn, bounds,
+                    state_idx, save=True,
+                    name=f"UnsafeTrajs_state{state_idx}"
+                )

@@ -8,6 +8,7 @@ This tool provides two main commands: `generateLog` and `checkSafety`.
 Both commands require a mode (`--mode`) and a corresponding model file (`--model_path`).
 
 Usage:
+    posto.py behavior --log=<logfile> --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path>
     posto.py generateLog --log=<logfile> --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path> --prob=<prob> --dtlog=<dtlog>
     posto.py checkSafety --log=<logfile> --mode=<mode> --model_path=<model_path>
 
@@ -252,29 +253,32 @@ if __name__ == '__main__':
 
     my_sys = System(log, mode, model_path)
 
-    if args['generateLog']:
+    if args['behavior']:
+        init = parse_initset(args['--init'])
+        timestamp = require_int(args['--timestamp'], "--timestamp", min_value=0)
+        my_sys.behaviour(init, timestamp)
+        
+
+    elif args['generateLog']:
         init = parse_initset(args['--init'])
         timestamp = require_int(args['--timestamp'], "--timestamp", min_value=0)
         prob = require_float(args['--prob'], "--prob", min_value=0)
         dtlog = require_float(args['--dtlog'], "--dtlog", min_value=0)
 
-        my_sys.generateLog(init, timestamp, prob, dtlog)
-        """ try:
+        
+        try:
             my_sys.generateLog(init, timestamp, prob, dtlog)
         except Exception as e:
             die(f"Log generation failed: {e!r}",
                 hint="Check your inputs and file permissions.")
- """
-    elif args['checkSafety']:
-        my_sys.checkSafety()
 
-        """ try:
-            my_sys.checkSafety(timestamp, unsafe, state, op)
+    elif args['checkSafety']:
+        try:
+            my_sys.checkSafety()
             ok("Safety check completed.")
         except Exception as e:
             die(f"Safety check failed: {e!r}",
                 hint="Verify the log file exists and input parameters are correct.")
- """
     else:
         warn("No command provided. Use 'generateLog' or 'checkSafety'.")
         print(__doc__)
