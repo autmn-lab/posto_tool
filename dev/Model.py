@@ -11,38 +11,37 @@ import random
 import numpy as np
 from System import *
 
-
-
 def my_getNextState(state):
-
+    
     dt=0.01
     ep=0.002
-    
+
     x_cur=copy.copy(state[0])
     y_cur=copy.copy(state[1])
-    z_cur=copy.copy(state[2])
-    a_cur=copy.copy(state[3])
 
     x_cur+=random.uniform(0,ep)
     y_cur+=random.uniform(0,ep)
-    z_cur+=random.uniform(0,ep)
-    a_cur+=random.uniform(0,ep)
 
-    x_next=x_cur+(dt*(-y_cur-(1.5*(x_cur*x_cur)-(0.5*(x_cur*x_cur*x_cur))-0.5)+(a_cur**2)));
+    x_next=x_cur+(dt*(-y_cur-(1.5*(x_cur)-(0.5*(x_cur*x_cur))-0.5)))
     y_next=y_cur+(dt*((3*x_cur)-y_cur))
-    z_next=z_cur+(dt*((0.1*(x_cur**2))+(0.5*(y_cur**3))+z_cur+a_cur))
-    #z_next=z_cur*dt+(((0.1*(x_cur**2))+(0.5*(y_cur**3))+z_cur+a_cur))
-    a_next=a_cur+(dt*(y_cur**2))
-    nextState=(x_next,y_next,z_next,a_next)
-    print(nextState)
+
+    nextState=(x_next,y_next)
     return nextState
 
 
-s = System("/home/prachi-bhattacharjee/Posto/logs/customModel2.lg")
-s.getNextState = my_getNextState
-s.generateLog([[-0.001,0.001], [-0.001,0.001], [-0.001,0.010],[-0.001,0.001]], 100, 10, 0.1)
+# no mode/model_path: we'll inject our own step function
+my_states = ['x', 'y']
+my_constraints = [(1, 'ge', 0.49)]
+sys = System(log_path="/home/prachi-bhattacharjee/Posto/logs/custom_with_modelpy.lg",states=my_states, constraints=my_constraints)
 
+# override the engine step
+sys.getNextState = my_getNextState
 
+# generate a log: init set must match state dimension (x, y)
+init_box = [[0.0, 0.2], [0.0, 0.2]]
+sys.behaviour(init_box, T=1000)
+sys.generateLog(init_box, T=1000, prob=3, dtlog=0.01)
+sys.checkSafety()
 
 
 
