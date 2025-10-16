@@ -20,14 +20,7 @@
     "omega2'": "omega2 + dt * (-k2*theta2 - d2*omega2 + (g/L)*sin(theta1)) + ep_omega"
   },
   "safety_constraints": [
-    { "state": "theta1", "op": "ge", "const": 2.0 },
-    { "state": "theta1", "op": "le", "const": -2.0 },
-    { "state": "theta2", "op": "ge", "const": 2.0 },
-    { "state": "theta2", "op": "le", "const": -2.0 },
-    { "state": "omega1", "op": "ge", "const": 5.0 },
-    { "state": "omega1", "op": "le", "const": -5.0 },
-    { "state": "omega2", "op": "ge", "const": 5.0 },
-    { "state": "omega2", "op": "le", "const": -5.0 }
+      { "state": "omega2", "op": "ge", "const": 10.0 }
   ]
 }
 

@@ -19,14 +19,14 @@
     "backlog'": "backlog + dt * (demand - production) + ep_back"
   },
   "safety_constraints": [
-    { "state": "inventory", "op": "le", "const": 0.0 },
-    { "state": "production", "op": "le", "const": 0.0 },
-    { "state": "demand", "op": "ge", "const": 50.0 },
-    { "state": "backlog", "op": "ge", "const": 50.0 },
     { "state": "inventory", "op": "ge", "const": 200.0 },
-    { "state": "production", "op": "ge", "const": 100.0 },
-    { "state": "demand", "op": "le", "const": -10.0 },
-    { "state": "backlog", "op": "le", "const": -10.0 }
+    { "state": "inventory", "op": "le", "const": -40.0 },
+    { "state": "production", "op": "ge", "const": 95.0 },
+    { "state": "production", "op": "le", "const": -50.0 },
+    { "state": "demand", "op": "ge", "const": 70.0 },
+    { "state": "demand", "op": "le", "const": -20.0 },
+    { "state": "backlog", "op": "ge", "const": 95.0 },
+    { "state": "backlog", "op": "le", "const": -80.0 }
   ]
 }
 

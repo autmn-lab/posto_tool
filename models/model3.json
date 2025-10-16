@@ -18,12 +18,12 @@
     "env'": "env + dt * (-0.1 * env + 0.01 * prey - 0.02 * pred) + ep_env"
   },
   "safety_constraints": [
-    { "state": "prey", "op": "ge", "const": 200.0 },
-    { "state": "prey", "op": "le", "const": 0.0 },
-    { "state": "pred", "op": "ge", "const": 100.0 },
-    { "state": "pred", "op": "le", "const": 0.0 },
-    { "state": "env", "op": "ge", "const": 50.0 },
-    { "state": "env", "op": "le", "const": -50.0 }
-  ]
+      { "state": "prey", "op": "ge", "const": 105.0 },
+      { "state": "prey", "op": "le", "const": 4.0 },
+      { "state": "pred", "op": "ge", "const": 110.0 },
+      { "state": "pred", "op": "le", "const": 50.0 },
+      { "state": "env", "op": "ge", "const": -8.0 },
+      { "state": "env", "op": "le", "const": -22.0 }
+    ]
 }
 

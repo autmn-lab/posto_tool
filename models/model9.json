@@ -19,14 +19,14 @@
     "shock'": "shock + dt * (-0.5 * shock) + ep_shock"
   },
   "safety_constraints": [
-    { "state": "price", "op": "ge", "const": 300.0 },
-    { "state": "trend", "op": "ge", "const": 50.0 },
-    { "state": "vol", "op": "ge", "const": 10.0 },
-    { "state": "shock", "op": "ge", "const": 50.0 },
-    { "state": "price", "op": "le", "const": 0.0 },
-    { "state": "trend", "op": "le", "const": -50.0 },
-    { "state": "vol", "op": "le", "const": 0.0 },
-    { "state": "shock", "op": "le", "const": -50.0 }
+    { "state": "price", "op": "ge", "const": 7500.0 },
+    { "state": "price", "op": "le", "const": 100.0 },
+    { "state": "trend", "op": "ge", "const": 40.0 },
+    { "state": "trend", "op": "le", "const": -40.0 },
+    { "state": "vol", "op": "ge", "const": 4.0 },
+    { "state": "vol", "op": "le", "const": 1.3 },
+    { "state": "shock", "op": "ge", "const": 20.0 },
+    { "state": "shock", "op": "le", "const": -20.0 }
   ]
 }
 
