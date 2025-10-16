@@ -3,7 +3,6 @@ import os,sys,copy
 PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
 
-from Parameters import *
 
 class TrajValidity:
 
@@ -11,10 +10,7 @@ class TrajValidity:
         self.log=log
     
     def getValTrajs(self,trajs):
-        '''
-        Check if all the trajectories in `traj` 
-        touch all the samples in `log` 
-        '''
+
         valTrajs=[]
         inValTrajs=[]
         for traj in trajs:

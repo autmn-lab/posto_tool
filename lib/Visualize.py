@@ -12,84 +12,63 @@ from itertools import combinations
 
 class Visualize:
 
-    def __init__(self, viz, msg, path):
+    def __init__(self, viz, msg, path, states):
         self.viz = viz
         self.msg = msg
         self.path = path
-
-    def vizTrajs(self, trajs,logUn=None,save=False,name="Untitled"):
-
-        if self.viz == False:
-            print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
-            f"Set {self.msg.BOLD}VIZ=True{self.msg.ENDC} to enable.")
-            return
-
-        ax = plt.axes(projection='3d')
-        ax.set_xlabel('x',fontsize=20,fontweight='bold')
-        ax.set_ylabel('y',fontsize=20,fontweight='bold')
-        ax.set_zlabel('time',fontsize=8,fontweight='bold')
-
-        if logUn!=None:
-            for lg in logUn:
-                wd=abs(lg[0][0][1]-lg[0][0][0])
-                ht=abs(lg[0][1][1]-lg[0][1][0])
-                p = plt.Rectangle((lg[0][0][0], lg[0][1][0]), wd, ht, facecolor='none', edgecolor='black',linewidth=0.4,alpha=0.5)
-                ax.add_patch(p)
-                art3d.pathpatch_2d_to_3d(p, z=lg[1], zdir="z")
-
-        for traj in trajs:
-            x=[p[0] for p in traj]
-            y=[p[1] for p in traj]
-            t=list(range(0,len(traj)))
-            ax.plot3D(x, y, t)
-
-        if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
-        else:
-            plt.show()
-        plt.clf()
-        
-    def vizTrajsVal(self, trajsVal,trajsInVal,logUn=None,save=False,name="Untitled"):
-
-        if self.viz == False:
-            print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
-            f"Set {self.msg.BOLD}VIZ=True{self.msg.ENDC} to enable.")
-            return
-
-        ax = plt.axes(projection='3d')
-        ax.set_xlabel('x',fontsize=20,fontweight='bold')
-        ax.set_ylabel('y',fontsize=20,fontweight='bold')
-        ax.set_zlabel('time',fontsize=8,fontweight='bold')
-
-        if logUn!=None:
-            for lg in logUn:
-                wd=abs(lg[0][0][1]-lg[0][0][0])
-                ht=abs(lg[0][1][1]-lg[0][1][0])
-                p = plt.Rectangle((lg[0][0][0], lg[0][1][0]), wd, ht, facecolor='none', edgecolor='black',linewidth=0.4,alpha=0.5)
-                ax.add_patch(p)
-                art3d.pathpatch_2d_to_3d(p, z=lg[1], zdir="z")
-
-        for traj in trajsVal:
-            x=[p[0] for p in traj]
-            y=[p[1] for p in traj]
-            t=list(range(0,len(traj)))
-            ax.plot3D(x, y, t,color='blue')
-
-        for traj in trajsInVal:
-            x=[p[0] for p in traj]
-            y=[p[1] for p in traj]
-            t=list(range(0,len(traj)))
-            ax.plot3D(x, y, t,color='red',alpha=0.3)
+        self.state_names = states
     
-        if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
-        else:
-            plt.show()
-        plt.clf()
+    ##LABEL
+    def latexAdd(self, name: str) -> str:
+    
+        s = (name or "").strip()
+        if not s:
+            return "state"
 
-    def vizTrajsVal2D(self, trajsVal,logUn=None,unsafe=0.0,state=0,save=False,name="Untitled"):
+        greek = {
+            "alpha": r"\alpha", "beta": r"\beta", "gamma": r"\gamma",
+            "delta": r"\delta", "theta": r"\theta", "lambda": r"\lambda",
+            "mu": r"\mu", "omega": r"\omega", "phi": r"\phi", "psi": r"\psi",
+            "eta": r"\eta", "zeta": r"\zeta", "kappa": r"\kappa", "sigma": r"\sigma"
+        }
+
+        # x_dot / x_ddot
+        if s.endswith("_dot"):
+            base = s[:-4]
+            return rf"\dot{{{greek.get(base, base)}}}"
+        if s.endswith("_ddot"):
+            base = s[:-5]
+            return rf"\ddot{{{greek.get(base, base)}}}"
+
+        # foo_bar_baz -> foo_{bar,baz}
+        if "_" in s:
+            parts = s.split("_")
+            base = greek.get(parts[0], parts[0])
+            sub = ",".join(parts[1:])
+            return rf"{base}_{{{sub}}}"
+
+        # x1 -> x_{1}
+        if len(s) >= 2 and s[-1].isdigit():
+            return rf"{s[:-1]}_{{{s[-1]}}}"
+
+        # two letters ab -> a_{b}
+        if len(s) == 2 and s.isalpha():
+            return rf"{s[0]}_{{{s[1]}}}"
+
+        # pure greek name
+        if s in greek:
+            return greek[s]
+
+        return s
+
+    def stateLabel(self, idx: int) -> str:
+        if 0 <= idx < len(self.state_names):
+            pretty = self.latexAdd(self.state_names[idx])
+            return rf"${pretty}$"
+        return f"state {idx}"
+
+
+    def vizTrajsVal2D(self, trajsVal,logUn=None, unsafe_bounds=None ,state=0,save=False,name="Untitled"):
 
         if self.viz == False:
             print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
@@ -101,7 +80,7 @@ class Visualize:
         t=list(range(len(trajsVal[0])))
 
         plt.xlabel("Time",fontsize=20,fontweight='bold')
-        plt.ylabel("State-"+str(state),fontsize=20,fontweight='bold')
+        plt.ylabel(self.stateLabel(state),fontsize=20,fontweight='bold')
 
         for traj in trajsVal:
             x=[p[state] for p in traj]
@@ -113,8 +92,12 @@ class Visualize:
                 ht=abs(lg[0][1][1]-lg[0][1][0])
                 p = plt.plot([lg[1],lg[1]],[lg[0][state][0], lg[0][state][1]], color='black',linewidth=lnWd,alpha=0.6)
 
-        if unsafe!=None:
-            p = plt.plot(t, [unsafe]*len(t),color='red',linewidth=lnWd,linestyle='dashed')
+        if unsafe_bounds is not None:
+            # Convert a single number into a list for uniform handling
+            bounds = unsafe_bounds if isinstance(unsafe_bounds, (list, tuple)) else [unsafe_bounds]
+            for b in bounds:
+                plt.plot(t, [b]*len(t), color='red', linewidth=lnWd, linestyle='dashed')
+
 
         if save:
             out = os.path.join(self.path, f"{name}.png")
@@ -135,7 +118,7 @@ class Visualize:
         t=list(range(len(trajsVal[0])))
 
         plt.xlabel("Time",fontsize=20,fontweight='bold')
-        plt.ylabel("State-"+str(state),fontsize=20,fontweight='bold')
+        plt.ylabel(self.stateLabel(state),fontsize=20,fontweight='bold')
 
         for traj in trajsVal:
             x=[p[state] for p in traj]
@@ -161,7 +144,7 @@ class Visualize:
             plt.show()
         plt.clf()
 
-    def vizTrajsSafeUnsafe2D(self, safeTrajs, unsafeTrajs, safeSamps, unsafeSamps, unsafe=0.0, state=0, save=False, name="Untitled"):
+    def vizTrajsSafeUnsafe2D(self, safeTrajs, unsafeTrajs, safeSamps, unsafeSamps, unsafe_bounds, state=0, save=False, name="Untitled"):
 
         if self.viz == False:
             print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
@@ -176,15 +159,16 @@ class Visualize:
             t=list(range(len(unsafeTrajs[0])))
 
         plt.xlabel("Time",fontsize=20,fontweight='bold')
-        plt.ylabel("State-"+str(state),fontsize=20,fontweight='bold')
+        plt.ylabel(self.stateLabel(state),fontsize=20,fontweight='bold')
 
         for traj in safeTrajs:
             x=[p[state] for p in traj]
             plt.plot(t,x,linewidth=lnWd,color='blue')
         
-        for traj in unsafeTrajs:
-            x=[p[state] for p in traj]
-            plt.plot(t,x,linewidth=lnWd,color='red',linestyle='dashdot',alpha=0.8)
+        if unsafeTrajs!=None:
+            for traj in unsafeTrajs:
+                x=[p[state] for p in traj]
+                plt.plot(t,x,linewidth=lnWd,color='red',linestyle='dashdot',alpha=0.8)
 
         if safeSamps!=None:
             for lg in safeSamps:
@@ -198,7 +182,13 @@ class Visualize:
                 ht=abs(lg[0][1][1]-lg[0][1][0])
                 p = plt.plot([lg[1],lg[1]],[lg[0][state][0], lg[0][state][1]], color='brown',linewidth=lnWd)
 
-        p = plt.plot(t, [unsafe]*len(t),color='red',linewidth=lnWd,linestyle='dashed')
+        if unsafe_bounds is not None:
+            # Convert a single number into a list for uniform handling
+            bounds = unsafe_bounds if isinstance(unsafe_bounds, (list, tuple)) else [unsafe_bounds]
+            for b in bounds:
+                plt.plot(t, [b]*len(t), color='red', linewidth=lnWd, linestyle='dashed')
+
+
 
         if save:
             out = os.path.join(self.path, f"{name}.png")
@@ -207,7 +197,7 @@ class Visualize:
             plt.show()
         plt.clf()
 
-    def vizLogsSafeUnsafe2D(self, T, safeSamps, unsafeSamps, unsafe=0.0, state=0, save=False, name="Untitled"):
+    def vizLogsSafeUnsafe2D(self, T, safeSamps, unsafeSamps, unsafe_bounds, state=0, save=False, name="Untitled"):
 
         if self.viz == False:
             print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
@@ -219,7 +209,7 @@ class Visualize:
         t=list(range(T))
 
         plt.xlabel("Time",fontsize=20,fontweight='bold')
-        plt.ylabel("State-"+str(state),fontsize=20,fontweight='bold')
+        plt.ylabel(self.stateLabel(state),fontsize=20,fontweight='bold')
 
         if safeSamps!=None:
             for lg in safeSamps:
@@ -233,34 +223,13 @@ class Visualize:
                 ht=abs(lg[0][1][1]-lg[0][1][0])
                 p = plt.plot([lg[1],lg[1]],[lg[0][state][0], lg[0][state][1]], color='brown',linewidth=lnWd)
 
-        p = plt.plot(t, [unsafe]*len(t),color='red',linewidth=lnWd,linestyle='dashed')
+        if unsafe_bounds is not None:
+            # Convert a single number into a list for uniform handling
+            bounds = unsafe_bounds if isinstance(unsafe_bounds, (list, tuple)) else [unsafe_bounds]
+            for b in bounds:
+                plt.plot(t, [b]*len(t), color='red', linewidth=lnWd, linestyle='dashed')
 
-        if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
-        else:
-            plt.show()
-        plt.clf()
 
-    def vizVaryC(self, cList, sList, tList, save=False, name="Untitled"):
-
-        if self.viz == False:
-            print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
-            f"Set {self.msg.BOLD}VIZ=True{self.msg.ENDC} to enable.")
-            return
-
-        plt.xlabel(r'$c$',fontsize=20,fontweight = 'bold')
-        plt.ylabel(r'Time taken',fontsize=20,fontweight = 'bold')
-        L=len(cList)
-        
-        plt.plot(cList,tList,linewidth=5,linestyle='dashed')
-
-        for i in range(L):
-            if sList[i]==True:
-                plt.scatter(cList[i], tList[i], s=350, c='green')
-            else:
-                plt.scatter(cList[i], tList[i], s=350, c='red')
-        
         if save:
             out = os.path.join(self.path, f"{name}.png")
             plt.savefig(out, format="png", bbox_inches="tight")
@@ -299,8 +268,6 @@ class Visualize:
         times = []
 
         for lg in logUn:
-            print(lg)
-            print(lg[0])
             intervals, t = lg[0], lg[1]
             times.append(t)
             for s_idx in range(nStates):
@@ -314,10 +281,10 @@ class Visualize:
         for (i, j) in pairs:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
-            ax.set_xlabel(f'state {i}', fontsize=12, fontweight='bold')
-            ax.set_ylabel(f'state {j}', fontsize=12, fontweight='bold')
+            ax.set_xlabel(self.stateLabel(i), fontsize=12, fontweight='bold')
+            ax.set_ylabel(self.stateLabel(j), fontsize=12, fontweight='bold')
             ax.set_zlabel('time', fontsize=10, fontweight='bold')
-            ax.set_title(f'Log Boxes: state {i} vs state {j} vs time', fontsize=12)
+            ax.set_title(f'Log Boxes: {self.stateLabel(i)} vs {self.stateLabel(j)} vs time', fontsize=12)
 
             # axis limits
             ax.set_xlim(mins[i], maxs[i])
@@ -388,8 +355,8 @@ class Visualize:
         for (i, j) in pairs:
             fig = plt.figure(figsize=(12, 5))
             ax = fig.add_subplot(111, projection='3d')
-            ax.set_xlabel(f'state {i}', fontsize=12, fontweight='bold')
-            ax.set_ylabel(f'state {j}', fontsize=12, fontweight='bold')
+            ax.set_xlabel(self.stateLabel(i), fontsize=12, fontweight='bold')
+            ax.set_ylabel(self.stateLabel(j), fontsize=12, fontweight='bold')
             ax.set_zlabel('time', fontsize=10, fontweight='bold')
             ax.set_xlim(mins[i], maxs[i])
             ax.set_ylim(mins[j], maxs[j])
@@ -428,3 +395,116 @@ class Visualize:
                 plt.show()
             plt.clf()
             plt.close(fig)
+    
+    
+    def vizTrajs(self,s1,s2,trajs,logUn=None,save=False,name="Untitled"):
+
+        if self.viz == False:
+            print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
+            f"Set {self.msg.BOLD}VIZ=True{self.msg.ENDC} to enable.")
+            return
+
+        ax = plt.axes(projection='3d')
+        ax.set_xlabel(self.stateLabel(s1),fontsize=20,fontweight='bold')
+        ax.set_ylabel(self.stateLabel(s2),fontsize=20,fontweight='bold')
+        ax.set_zlabel('time',fontsize=8,fontweight='bold')
+
+        if logUn!=None:
+            for lg in logUn:
+                wd=abs(lg[0][0][1]-lg[0][0][0])
+                ht=abs(lg[0][1][1]-lg[0][1][0])
+                p = plt.Rectangle((lg[0][0][0], lg[0][1][0]), wd, ht, facecolor='none', edgecolor='black',linewidth=0.4,alpha=0.5)
+                ax.add_patch(p)
+                art3d.pathpatch_2d_to_3d(p, z=lg[1], zdir="z")
+
+        for traj in trajs:
+            x=[p[0] for p in traj]
+            y=[p[1] for p in traj]
+            t=list(range(0,len(traj)))
+            ax.plot3D(x, y, t)
+
+        if save:
+            out = os.path.join(self.path, f"{name}.png")
+            plt.savefig(out, format="png", bbox_inches="tight")
+        else:
+            plt.show()
+        plt.clf()
+
+
+
+
+
+
+
+    #UNUSED FUNCTIONS
+        
+    def vizTrajsVal(self, trajsVal,trajsInVal,logUn=None,save=False,name="Untitled"):
+
+        if self.viz == False:
+            print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
+            f"Set {self.msg.BOLD}VIZ=True{self.msg.ENDC} to enable.")
+            return
+
+        ax = plt.axes(projection='3d')
+        ax.set_xlabel('x',fontsize=20,fontweight='bold')
+        ax.set_ylabel('y',fontsize=20,fontweight='bold')
+        ax.set_zlabel('time',fontsize=8,fontweight='bold')
+
+        if logUn!=None:
+            for lg in logUn:
+                wd=abs(lg[0][0][1]-lg[0][0][0])
+                ht=abs(lg[0][1][1]-lg[0][1][0])
+                p = plt.Rectangle((lg[0][0][0], lg[0][1][0]), wd, ht, facecolor='none', edgecolor='black',linewidth=0.4,alpha=0.5)
+                ax.add_patch(p)
+                art3d.pathpatch_2d_to_3d(p, z=lg[1], zdir="z")
+
+        for traj in trajsVal:
+            x=[p[0] for p in traj]
+            y=[p[1] for p in traj]
+            t=list(range(0,len(traj)))
+            ax.plot3D(x, y, t,color='blue')
+
+        for traj in trajsInVal:
+            x=[p[0] for p in traj]
+            y=[p[1] for p in traj]
+            t=list(range(0,len(traj)))
+            ax.plot3D(x, y, t,color='red',alpha=0.3)
+    
+        if save:
+            out = os.path.join(self.path, f"{name}.png")
+            plt.savefig(out, format="png", bbox_inches="tight")
+        else:
+            plt.show()
+        plt.clf()
+
+    def vizVaryC(self, cList, sList, tList, save=False, name="Untitled"):
+
+        if self.viz == False:
+            print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
+            f"Set {self.msg.BOLD}VIZ=True{self.msg.ENDC} to enable.")
+            return
+
+        plt.xlabel(r'$c$',fontsize=20,fontweight = 'bold')
+        plt.ylabel(r'Time taken',fontsize=20,fontweight = 'bold')
+        L=len(cList)
+        
+        plt.plot(cList,tList,linewidth=5,linestyle='dashed')
+
+        for i in range(L):
+            if sList[i]==True:
+                plt.scatter(cList[i], tList[i], s=350, c='green')
+            else:
+                plt.scatter(cList[i], tList[i], s=350, c='red')
+        
+        if save:
+            out = os.path.join(self.path, f"{name}.png")
+            plt.savefig(out, format="png", bbox_inches="tight")
+        else:
+            plt.show()
+        plt.clf()
+
+
+    
+
+
+    
