@@ -3,6 +3,7 @@ import os,sys,copy
 PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
 
+from Parameters import *
 import random
 import numpy as np
 
