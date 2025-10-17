@@ -1,0 +1,32 @@
+{
+  "state_vars": ["inventory", "production", "demand", "backlog"],
+  "constants": {
+    "dt": 0.1,
+    "replen_rate": 0.5,
+    "prod_decay": 0.1,
+    "demand_mean": 20.0
+  },
+  "ranges": {
+    "ep_inv": [-1.0, 1.0],
+    "ep_prod": [-0.5, 0.5],
+    "ep_dem": [-3.0, 3.0],
+    "ep_back": [-0.5, 0.5]
+  },
+  "equations": {
+    "inventory'": "inventory + dt * (production - demand) + ep_inv",
+    "production'": "production + dt * (replen_rate*(backlog) - prod_decay*production) + ep_prod",
+    "demand'": "demand + dt * (0.1*(demand_mean - demand)) + ep_dem",
+    "backlog'": "backlog + dt * (demand - production) + ep_back"
+  },
+  "safety_constraints": [
+    { "state": "inventory", "op": "ge", "const": 200.0 },
+    { "state": "inventory", "op": "le", "const": -40.0 },
+    { "state": "production", "op": "ge", "const": 95.0 },
+    { "state": "production", "op": "le", "const": -50.0 },
+    { "state": "demand", "op": "ge", "const": 70.0 },
+    { "state": "demand", "op": "le", "const": -20.0 },
+    { "state": "backlog", "op": "ge", "const": 95.0 },
+    { "state": "backlog", "op": "le", "const": -80.0 }
+  ]
+}
+

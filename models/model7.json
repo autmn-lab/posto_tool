@@ -1,0 +1,32 @@
+{
+  "state_vars": ["q1", "q2", "q3", "q4", "q5"],
+  "constants": {
+    "dt": 0.01,
+    "mass": 1.0,
+    "damp": 0.2
+  },
+  "ranges": {
+    "ep_q": [-0.01, 0.01],
+    "ep_v": [-0.02, 0.02]
+  },
+  "equations": {
+    "q1'": "q1 + dt * (-damp*q1 + q2 - 0.5*q1**3) + ep_q",
+    "q2'": "q2 + dt * (-damp*q2 + q3) + ep_q",
+    "q3'": "q3 + dt * (-damp*q3 + q4) + ep_q",
+    "q4'": "q4 + dt * (-damp*q4 + q5) + ep_q",
+    "q5'": "q5 + dt * (-damp*q5 - q1) + ep_q"
+  },
+  "safety_constraints": [
+    { "state": "q1", "op": "ge", "const": 2.0 },
+    { "state": "q2", "op": "ge", "const": 2.0 },
+    { "state": "q3", "op": "ge", "const": 2.0 },
+    { "state": "q4", "op": "ge", "const": 2.0 },
+    { "state": "q5", "op": "ge", "const": 2.0 },
+    { "state": "q1", "op": "le", "const": -2.0 },
+    { "state": "q2", "op": "le", "const": -2.0 },
+    { "state": "q3", "op": "le", "const": -2.0 },
+    { "state": "q4", "op": "le", "const": -2.0 },
+    { "state": "q5", "op": "le", "const": -2.0 }
+  ]
+}
+

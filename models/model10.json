@@ -1,0 +1,33 @@
+{
+  "state_vars": ["p", "q", "r", "s"],
+  "constants": {
+    "dt": 0.02,
+    "a1": 0.8,
+    "a2": -0.6,
+    "a3": 0.4,
+    "a4": -0.2
+  },
+  "ranges": {
+    "ep_p": [-0.01, 0.01],
+    "ep_q": [-0.015, 0.015],
+    "ep_r": [-0.02, 0.02],
+    "ep_s": [-0.01, 0.01]
+  },
+  "equations": {
+    "p'": "p + dt * (a1*p - a2*p**2 + 0.1*q**3 - 0.05*r**4) + ep_p",
+    "q'": "q + dt * (-a1*q + a3*p**2 - 0.2*s**3) + ep_q",
+    "r'": "r + dt * (a2*q - a3*r**3 + 0.1*p - 0.05*s**2) + ep_r",
+    "s'": "s + dt * (a4*r - 0.1*p**4 + 0.2*q**2) + ep_s"
+  },
+  "safety_constraints": [
+    { "state": "p", "op": "ge", "const": 20.0 },
+    { "state": "p", "op": "le", "const": -20.0 },
+    { "state": "q", "op": "ge", "const": 15.0 },
+    { "state": "q", "op": "le", "const": -15.0 },
+    { "state": "r", "op": "ge", "const": 18.0 },
+    { "state": "r", "op": "le", "const": -18.0 },
+    { "state": "s", "op": "ge", "const": 12.0 },
+    { "state": "s", "op": "le", "const": -12.0 }
+  ]
+}
+

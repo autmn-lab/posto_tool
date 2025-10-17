@@ -1,0 +1,27 @@
+{
+  "state_vars": ["x", "y", "z"],
+  "constants": {
+    "dt": 0.01,
+    "alpha": 2.0,
+    "beta": 0.5,
+    "gamma": 1.0
+  },
+  "ranges": {
+    "ep_x": [-0.005, 0.005],
+    "ep_y": [-0.002, 0.002],
+    "ep_z": [-0.003, 0.003]
+  },
+  "equations": {
+    "x'": "x + dt * (alpha * y - beta * x**3) + ep_x",
+    "y'": "y + dt * (beta * x**2 - gamma * z) + ep_y",
+    "z'": "z + dt * (x - y + gamma * z**2) + ep_z"
+  },
+  "safety_constraints": [
+    { "state": "x", "op": "ge", "const": 5.74 },
+    { "state": "x", "op": "le", "const": -10.0 },
+    { "state": "y", "op": "le", "const": -8.0 },
+    { "state": "z", "op": "ge", "const": 12.0 },
+    { "state": "z", "op": "le", "const": -3.5 }
+  ]
+}
+

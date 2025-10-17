@@ -1,0 +1,27 @@
+{
+  "state_vars": [
+    "x",
+    "y"
+  ],
+  "constants": {
+    "dt": 0.01
+  },
+  "ranges": {
+    "ep": [
+      -0.002,
+      0.002
+    ]
+  },
+  "equations": {
+    "x'": "x + dt * (-y - (1.5*(x*x) - 0.5*(x*x*x) - 0.5)) + ep",
+    "y'": "y + dt * ((3*x) - y) + ep"
+  },
+  "safety_constraints": [
+    {
+      "state": "x",
+      "op": "le",
+      "const": -0.10
+    }
+  ]
+}
+

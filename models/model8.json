@@ -1,0 +1,33 @@
+{
+  "state_vars": ["A", "B", "C", "D"],
+  "constants": {
+    "dt": 0.05,
+    "k1": 1.0,
+    "k2": 0.5,
+    "k3": 0.3,
+    "k4": 0.2
+  },
+  "ranges": {
+    "ep_A": [0.0, 0.5],
+    "ep_B": [0.0, 0.5],
+    "ep_C": [-0.2, 0.2],
+    "ep_D": [-0.3, 0.3]
+  },
+  "equations": {
+    "A'": "A + dt * (-k1*A + k4*D) + ep_A",
+    "B'": "B + dt * (k1*A - k2*B**2) + ep_B",
+    "C'": "C + dt * (k2*B**2 - k3*C) + ep_C",
+    "D'": "D + dt * (k3*C - k4*D) + ep_D"
+  },
+  "safety_constraints": [
+    { "state": "A", "op": "ge", "const": 100.0 },
+    { "state": "B", "op": "ge", "const": 100.0 },
+    { "state": "C", "op": "ge", "const": 50.0 },
+    { "state": "D", "op": "ge", "const": 50.0 },
+    { "state": "A", "op": "le", "const": -10.0 },
+    { "state": "B", "op": "le", "const": -10.0 },
+    { "state": "C", "op": "le", "const": -10.0 },
+    { "state": "D", "op": "le", "const": -10.0 }
+  ]
+}
+
