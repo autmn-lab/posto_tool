@@ -1,4 +1,5 @@
 import os,sys,copy
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import time
 import ast
 import json
@@ -14,6 +15,9 @@ from lib.JFBF import *
 from lib.Visualize import *
 from lib.Equation import *
 from lib.ANN import *
+from concurrent.futures import ProcessPoolExecutor
+
+random.seed(42)
 
 class System:
 
@@ -130,7 +134,11 @@ class System:
         note(f"Time horizon: {T}")
         note(f"Mode: {self.mode}")
         note(f"Model file: {self.model_path}")
-        trajs = self.getRandomTrajs(init_set, T, 20)
+        
+        if self.mode=='ann':
+            trajs = self.behaveANN(init_set, T)
+        else:
+            trajs = self.behave(init_set, T)
 
         prefix = "behaviorPair"
         nStates = len(trajs[0][0])
@@ -142,11 +150,54 @@ class System:
             viz = Visualize(VIZ, msg, self.imgdir, self.state_names)
             viz.vizTrajs(i, j, pair_trajs, logUn=None, save=True,
                         name=f"{prefix}_{i}_{j}")
+
         ok("Behavior generated successfully.")
         ok(f"Stored at: {msg.UNDERLINE}{self.imgdir}{msg.ENDC}")
         elapsed = time.time() - start
         print(f"{msg.HEADER}[INFO]{msg.ENDC} Time taken: {msg.BOLD}{elapsed:.4f} sec{msg.ENDC}")
 
+    def behave(self, init_set, T):
+
+        trajs = self.getRandomTrajs(init_set, T, 1)
+        return trajs
+            
+    def behaveANN(self, init_set, T):
+        K=1
+        n_states = len(init_set)
+        states = []
+        for i in range(K):
+            point = []
+            for dim in init_set:
+                point.append(random.uniform(dim[0], dim[1]))
+            states.append(point)
+
+       
+        trajs = [[] for _ in range(K)]
+        ann_model = self.model
+
+        for t in range(T):
+            
+            for idx in range(K):
+                trajs[idx].append(tuple(states[idx]))
+
+            try:
+                single_tensors = [ann_model.prepareInput(s) for s in states]
+                x_batch = np.concatenate(single_tensors, axis=0)
+
+                #check if predictions are in order
+                out = ann_model.model.predict(x_batch, verbose=0)
+                out_flat = out.reshape((K, -1))
+                states = [list(map(float, out_flat[i])) for i in range(K)]
+            except Exception:
+                new_states = []
+                for s in states:
+                    ns = ann_model.getNextState(s)
+                    new_states.append(list(ns))
+                states = new_states
+
+        return trajs
+
+        
 
         
     def generateLog(self, init_set, T, prob, dtlog):
@@ -174,7 +225,7 @@ class System:
             for box, t in logUn:
                 interval_strs = []
                 for (lo, hi) in box:
-                    interval_strs.append(f"[{lo:.6f}, {hi:.6f}]")
+                    interval_strs.append(f"[{lo}, {hi}]")
                 intervals_line = ", ".join(interval_strs)
                 f.write(f"t={int(t)}: [{intervals_line}]\n")
 

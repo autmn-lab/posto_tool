@@ -1,0 +1,10 @@
+{
+  "state_vars": ["x"],
+  "constants": {
+    "c": 1
+  },
+  "equations": {
+    "x'": "x**3 + c"
+  }
+}
+

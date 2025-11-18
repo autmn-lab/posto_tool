@@ -87,14 +87,13 @@ python3 posto.py behavior --log=logs/model1.lg --init="[[-1.667370, -1.467370], 
 #### Example Results
 
 <p align="left">
-  <img src="img/Behavior/Terminal.png" width="50%">
+  <img src="img/Behavior/terminal.png" width="50%">
 </p>
 
 <p align="center">
   <img src="img/Behavior/behaviorPair_0_1.png" width="30%">
-  <img src="img/Behavior/behaviorPair_0_2.png" width="30%">
-  <img src="img/Behavior/behaviorPair_1_2.png" width="30%">
 </p>
+
 
 
 ## Generate Log
@@ -119,8 +118,9 @@ python3 posto.py generateLog --log=logs/model1.lg --init="[[-2,1],[-1.6,0.8],[-2
 #### Example Results
 
 <p align="left">
-  <img src="img/Log/Terminal.png" width="50%">
+  <img src="img/Log/terminal.png" width="50%">
 </p>
+
 
 ##### Log File Example 
 
@@ -132,17 +132,15 @@ python3 posto.py generateLog --log=logs/model1.lg --init="[[-2,1],[-1.6,0.8],[-2
 
 <p align="center">
   <img src="img/Log/pair_0_1.png" width="30%">
-  <img src="img/Log/pair_0_2.png" width="30%">
-  <img src="img/Log/pair_1_2.png" width="30%">
 </p>
+
 
 ##### With Trajectory Visualization
 
 <p align="center">
   <img src="img/Log/traj_log_pair_0_1.png" width="30%">
-  <img src="img/Log/traj_log_pair_0_2.png" width="30%">
-  <img src="img/Log/traj_log_pair_1_2.png" width="30%">
 </p>
+
 
 
 ---
@@ -167,32 +165,28 @@ python3 posto.py checkSafety --log=logs/model1.lg --mode=equation
 ##### SAFE
 
 <p align="left">
-  <img src="img/Safe/Terminal1.png" width="50%">
-</p>
-
-<p align="left">
-  <img src="img/Safe/Terminal2.png" width="50%">
+  <img src="img/Safe/terminal.png" width="50%">
 </p>
 
 <p align="center">
   <img src="img/Safe/SafeTrajs_state0.png" width="30%">
   <img src="img/Safe/SafeTrajs_state1.png" width="30%">
-  <img src="img/Safe/SafeTrajs_state2.png" width="30%">
 </p>
+
 
 ##### UNSAFE
 
 <p align="left">
-  <img src="img/Unsafe/Terminal.png" width="50%">
+  <img src="img/Unsafe/terminal.png" width="50%">
 </p>
 
 <p align="center">
-  <img src="img/Unsafe/SafeUnsafeLogs_state0.png" width="30%">
-  <img src="img/Unsafe/SafeUnsafeLogs_state1.png" width="30%">
-  <img src="img/Unsafe/SafeUnsafeLogs_state2.png" width="30%">
+  <img src="img/Unsafe/SafeUnsafeTrajs_state0.png" width="30%">
+  <img src="img/Unsafe/SafeUnsafeTrajs_state1.png" width="30%">
 </p>
 
-## Using `Model.py` for Custom Dynamics
+
+## Using the Dev Mode (`Model.py`)
 
 The `Model.py` path lets us **override** the system’s next‑state map at runtime.
 
@@ -275,4 +269,3 @@ python dev/Model.py
   <img src="img/CustomModel/SafeUnsafeTrajs_state0.png" width="30%">
   <img src="img/CustomModel/SafeUnsafeTrajs_state1.png" width="30%">
 </p>
-

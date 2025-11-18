@@ -8,8 +8,8 @@ This tool provides two main commands: `generateLog` and `checkSafety`.
 Both commands require a mode (`--mode`) and a corresponding model file (`--model_path`).
 
 Usage:
-    posto.py behavior --log=<logfile> --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path>
-    posto.py generateLog --log=<logfile> --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path> --prob=<prob> --dtlog=<dtlog>
+    posto.py behavior --log=<logfile> [--states=<states>] --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path>
+    posto.py generateLog --log=<logfile> [--states=<states>] --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path> --prob=<prob> --dtlog=<dtlog>
     posto.py checkSafety --log=<logfile> --mode=<mode> --model_path=<model_path>
 
 Options:
@@ -250,8 +250,14 @@ if __name__ == '__main__':
     log = require_path(args['--log'], "--log")
     mode = require_mode(args['--mode'])
     model_path = require_model(args['--model_path'], mode)
+    if mode == 'ann':
+        states = args['--states']
+        my_sys = System(log, mode, model_path, states)
+    else:
+        my_sys = System(log, mode, model_path)
+        
 
-    my_sys = System(log, mode, model_path)
+    
 
     if args['behavior']:
         init = parse_initset(args['--init'])
@@ -266,11 +272,12 @@ if __name__ == '__main__':
         dtlog = require_float(args['--dtlog'], "--dtlog", min_value=0)
 
         
-        try:
+        """ try:
             my_sys.generateLog(init, timestamp, prob, dtlog)
         except Exception as e:
             die(f"Log generation failed: {e!r}",
-                hint="Check your inputs and file permissions.")
+                hint="Check your inputs and file permissions.") """
+        my_sys.generateLog(init, timestamp, prob, dtlog)
 
     elif args['checkSafety']:
         try:

@@ -40,11 +40,8 @@ sys.getNextState = my_getNextState
 # generate a log: init set must match state dimension (x, y)
 init_box = [[0.0, 0.2], [0.0, 0.2]]
 sys.behaviour(init_box, T=1000)
-sys.generateLog(init_box, T=1000, prob=3, dtlog=0.01)
+sys.generateLog(init_box, T=2000, prob=2, dtlog=0.02)
 sys.checkSafety()
-
-
-
 
 
 

@@ -1,0 +1,20 @@
+{
+  "state_vars": ["x", "y"],
+  "constants": {
+    "dt": 0.01
+  },
+  "ranges": {
+    "ep": [0.0, 0.002]
+  },
+  "equations": {
+    "x'": "(x + ep) + (dt*(-y-(1.5*(x)-(0.5*(x*x))-0.5)))",
+    "y'": "(y + ep) + (dt*((3*x)-y))"
+  },
+  "safety_constraints": [
+    {"state": "x", "op": "ge", "const": 0.3},
+    {"state": "x", "op": "le", "const": -0.1},
+    {"state": "y", "op": "ge", "const": 0.49},
+    {"state": "y", "op": "le", "const": -0.1}
+  ]
+}
+
