@@ -10,7 +10,7 @@ Both commands require a mode (`--mode`) and a corresponding model file (`--model
 Usage:
     posto.py behavior --log=<logfile> [--states=<states>] --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path>
     posto.py generateLog --log=<logfile> [--states=<states>] --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path> --prob=<prob> --dtlog=<dtlog>
-    posto.py checkSafety --log=<logfile> --mode=<mode> --model_path=<model_path>
+    posto.py checkSafety --log=<logfile> [--states=<states>] [--constraints=<constraints>] --mode=<mode> --model_path=<model_path>
 
 Options:
     --log=<logfile>        Path to the log file to read from or write to.
@@ -250,13 +250,16 @@ if __name__ == '__main__':
     log = require_path(args['--log'], "--log")
     mode = require_mode(args['--mode'])
     model_path = require_model(args['--model_path'], mode)
-    if mode == 'ann':
-        states = args['--states']
-        my_sys = System(log, mode, model_path, states)
+    if args['--states']:
+        states = args['--states'].split(',')
     else:
-        my_sys = System(log, mode, model_path)
-        
+        states = None
+    if args['--constraints']:
+        constraints = args['--constraints']
+    else:
+        constraints = None
 
+    my_sys = System(log, mode, model_path, states, constraints)
     
 
     if args['behavior']:

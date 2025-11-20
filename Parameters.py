@@ -8,7 +8,7 @@ Please add the following line in ~/.bashrc
 export MNTR_BB_ROOT_DIR = <YOUR PROJECT ROOT>
 '''
 
-PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
+PROJECT_ROOT = os.environ['POSTO_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
 
 LIB_PATH=PROJECT_ROOT+'/'+'lib/'

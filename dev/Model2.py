@@ -10,7 +10,7 @@ sys.path.append(PROJECT_ROOT)
 import random
 import numpy as np
 from math import cos, sin
-from System import *
+import System
 
 def my_getNextState(state):
     c = 1

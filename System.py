@@ -31,50 +31,57 @@ class System:
         self.mode       = mode
         self.model_path = model_path
 
-        # Select the appropriate model based on mode
+        # Select model
         if mode == "equation":
             self.model = Equation(model_path)
         elif mode == "ann":
             self.model = ANN(model_path)
 
-        # Directory for storing images
         self.imgdir = os.path.join(os.path.dirname(self.log_path), "img")
 
-        # Parse the constraints from the JSON model
+        # -------------------------
+        # Shortened constraint logic
+        # -------------------------
         self.constraints = constraints
         self.state_names = states
-        if mode == "equation" and model_path:
-            with open(model_path, "r") as f:
+
+        # Helper to parse a JSON constraints/model file
+        def load_spec(path):
+            with open(path, "r") as f:
                 spec = json.load(f)
-            
             state_vars = spec.get("state_vars", [])
-            self.state_names = state_vars
+            cons_list  = spec.get("safety_constraints", [])
+            processed  = []
 
-            cons_list = spec.get("safety_constraints")
-            if cons_list:
-                processed = []
-                for item in cons_list:
-                    # Each constraint can be a dict or a list/tuple
-                    if isinstance(item, dict):
-                        # Extract state index/name and operator; handle 0.0 correctly
-                        st = item.get("state_idx") if item.get("state_idx") is not None else item.get("state")
-                        op = item.get("op")       if item.get("op")       is not None else item.get("inequal")
-                        # Prefer 'const' over 'value'; avoid falsey-or fallthrough
-                        val = item.get("const") if item.get("const") is not None else item.get("value")
-                    else:
-                        st, op, val = item  # assume (state, op, constant) sequence
+            for item in cons_list:
+                if isinstance(item, dict):
+                    st  = item.get("state_idx", item.get("state"))
+                    op  = item.get("op",        item.get("inequal"))
+                    val = item.get("const",     item.get("value"))
+                else:
+                    st, op, val = item
 
-                    # Convert state name to numeric index
-                    if isinstance(st, str):
-                        st = state_vars.index(st)
+                if isinstance(st, str):
+                    st = state_vars.index(st)
+                if val is None:
+                    raise ValueError(f"Constraint {item!r} missing numeric constant")
+                processed.append((int(st), op, float(val)))
 
-                    # Ensure the constant is defined
-                    if val is None:
-                        raise ValueError(f"Constraint {item!r} is missing a numeric constant")
+            return state_vars, processed
 
-                    processed.append((int(st), op, float(val)))
+    
+        if isinstance(constraints, str) and constraints.endswith(".json"):
+            self.state_names, self.constraints = load_spec(constraints)
+            return
 
-                self.constraints = processed
+    
+        if mode == "equation" and model_path:
+            self.state_names, self.constraints = load_spec(model_path)
+            return
+
+        if constraints is not None and model_path is None:
+            if self.state_names is None:
+                raise ValueError("states cannot be None when no JSON constraints and no model_path")
 
 
 
