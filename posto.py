@@ -1,87 +1,53 @@
-#comprehensive test suite with multiple dimensions, uncertainities injected in multiple places, multiple degrees.
-
 #!/usr/bin/env python3
 """
-Posto: Scripts to generate logs and check safety of trajectories
-
-This tool provides two main commands: `generateLog` and `checkSafety`.
-Both commands require a mode (`--mode`) and a corresponding model file (`--model_path`).
+Posto: scripts to generate logs, plot behaviour trajectories and check safety
+of trajectories.
 
 Usage:
-    posto.py behavior --log=<logfile> [--states=<states>] --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path>
-    posto.py generateLog --log=<logfile> [--states=<states>] --init=<initialState> --timestamp=<timestamp> --mode=<mode> --model_path=<model_path> --prob=<prob> --dtlog=<dtlog>
-    posto.py checkSafety --log=<logfile> [--states=<states>] [--constraints=<constraints>] --mode=<mode> --model_path=<model_path>
+    posto.py behavior --log=<directory> --init=<initialSet> --timestamp=<T> --mode=<mode> --model_path=<model_path> [--states=<states>]
+    posto.py generateLog --log=<logfile> --init=<initialSet> --timestamp=<T> --mode=<mode> --model_path=<model_path> --prob=<prob> --dtlog=<dtlog> [--states=<states>]
+    posto.py checkSafety --log=<logfile> --mode=<mode> --model_path=<model_path> [--states=<states>] [--constraints=<constraints>]
 
 Options:
-    --log=<logfile>        Path to the log file to read from or write to.
-                           For `generateLog`, this is where the generated log will be stored.
-                           For `checkSafety`, this is the log to be checked.
-
-    --init=<initialState>  [generateLog only] Initial set for log generation.
-                           Must be provided in the format: "[x_min, x_max],[y_min, y_max]"
-                           Example: --init="[0.8,1],[0.8,1]"
-
-    --timestamp=<timestamp>
-                           Time horizon (integer, >= 0) for the simulation.
-
-    --mode=<mode>          The mode to use to generate the log/trajectories. Must be one of:
-                             - equation : uses an equation-based function provided in the json file (.json)
-                             - ann      : uses an artificial neural network model (.h5)
-
-    --model_path=<model_path>     Path to the model file corresponding to the chosen operation:
-                             - if -mode=equation → must be a .json file conatining the function.
-                             - if --mode=ann      → must be a .h5 file of the trained ann model
-                           The file must exist and be accessible.
-
-
-Commands:
-    generateLog            Generates a trajectory log based on the given initial set, time horizon,
-                           and operator. The output is written to the file specified by --log.
-
-    checkSafety            Checks whether the trajectories in the log satisfy the given safety condition.
-                           The condition is specified by --state, --op, and --unsafe.
+    --log=<directory or logfile>   For `behavior`, path to a directory where plots will be saved; an `img` folder will be created under this directory.
+                                   For `generateLog` and `checkSafety`, path to the `.lg` file to write or read; plots are saved in an `img` folder next to the file.
+    --init=<initialSet>            Initial state set for trajectory sampling, e.g. "[0.8,1],[0.8,1]".  One [lo, hi] pair per dimension.
+    --timestamp=<T>                Time horizon (integer ≥ 0) for the simulation.
+    --mode=<mode>                  Either `equation` (use a JSON model) or `ann` (use a trained neural network `.h5`).
+    --model_path=<model_path>      Path to the model file (.json for equation, .h5 for ann).
+    --prob=<prob>                  Probability of logging at each step when generating a log (float ≥ 0).
+    --dtlog=<dtlog>                Time step between logged entries when generating a log (float ≥ 0).
+    --states=<states>              Comma-separated list of state variable names.  Required for ann mode; optional for equation mode.
+    --constraints=<constraints>    Safety constraints specification (JSON file or list).  Required for checkSafety in ann mode; optional otherwise.
 
 Examples:
-    # Generate a log using an ANN operator
-    posto.py generateLog --log=traj.log --init="[0.8,1],[0.8,1]" --timestamp=50 --mode=ann --model_path=model_path.h5
+    # Plot random trajectories using an ANN model and save plots to ./plots/img
+    posto.py behavior --log=./plots --init="[0.8,1],[0.8,1]" --timestamp=50 --mode=ann --model_path=model.h5 --states=x,y
 
-    # Generate a log using an equation operator
-    posto.py generateLog --log=traj.log --init="[0.5,0.9],[0.5,0.9]" --timestamp=30 --mode=equation --model_path=operator.json
+    # Generate a trajectory log using an equation model
+    posto.py generateLog --log=traj.lg --init="[0.5,0.9],[0.5,0.9]" --timestamp=30 --mode=equation --model_path=operator.json --prob=0.2 --dtlog=0.1
 
-    # Check safety of a log
-    posto.py checkSafety --log=traj.log --mode=ann --model_path=model_path.h5
+    # Check safety of an existing log
+    posto.py checkSafety --log=traj.lg --mode=ann --model_path=model.h5 --states=x,y --constraints=constraints.json
 """
 
-
 from docopt import docopt
-import ast, os, sys, time, re
+import ast
+import os
+import re
+import sys
+
 from System import *
+from Parameters import die, ok, warn
 
 
 def parse_initset(init_str):
-    """
-    Parse --init into a list of [lo, hi] float pairs for n dimensions.
-
-    Accepts formats like:
-      "[[0.8, 1.0], [0.8, 1.0], [0.8, 1.0]]"
-      "[0.8, 1.0], [0.8, 1.0], [0.8, 1.0]"   (no outer brackets)
-      " [  [0.8,1], [0.8,1] ]  "             (extra spaces/newlines)
-
-    Returns:
-      List[List[float, float]]
-
-    Raises:
-      ValueError with a helpful message if input is malformed.
-    """
+    """Convert a string like "[0,1],[2,3]" into a list of [lo, hi] pairs."""
     if init_str is None:
         raise ValueError("--init is required")
-
     s = init_str.strip()
-
-    # Sometimes users paste "init=..." — strip that if present
     s = re.sub(r'^\s*init\s*=\s*', '', s, flags=re.IGNORECASE).strip()
 
-    # First try parsing as-is
     def _try_eval(txt):
         try:
             return ast.literal_eval(txt)
@@ -89,79 +55,51 @@ def parse_initset(init_str):
             return None
 
     obj = _try_eval(s)
-
-    # If that fails, try wrapping in outer brackets (handles no-outer-brackets case)
     if obj is None:
         obj = _try_eval(f'[{s}]')
         if obj is None:
             raise ValueError(
-                "Could not parse --init. Expected something like: "
-                "'[[lo, hi], [lo, hi], ...]' or '[lo, hi], [lo, hi]'. "
-                f"Got: {init_str!r}"
+                "Could not parse --init. Expected something like '[lo, hi],[lo, hi]'."
             )
-
-    # Normalize tuples to lists
     if isinstance(obj, tuple):
         obj = list(obj)
-
-    # If user provided a single pair like [lo, hi], wrap it to make [[lo, hi]]
-    if (isinstance(obj, list)
-        and len(obj) == 2
-        and all(isinstance(x, (int, float)) for x in obj)):
+    if isinstance(obj, list) and len(obj) == 2 and all(isinstance(x, (int, float)) for x in obj):
         obj = [obj]
-
-    # Validate structure: list of pairs
-    if not (isinstance(obj, list) and all(
-        isinstance(p, (list, tuple)) and len(p) == 2 for p in obj
-    )):
-        raise ValueError(
-            "Parsed --init is not a list of [lo, hi] pairs. "
-            f"Got: {obj!r}"
-        )
-
-    # Coerce to floats and validate ordering
+    if not (isinstance(obj, list) and all(isinstance(p, (list, tuple)) and len(p) == 2 for p in obj)):
+        raise ValueError("--init is not a list of [lo, hi] pairs.")
     out = []
-    for i, pair in enumerate(obj, start=1):
+    for pair in obj:
         lo, hi = pair
         try:
             lo_f = float(lo)
             hi_f = float(hi)
         except Exception:
-            raise ValueError(
-                f"--init pair #{i} contains non-numeric values: {pair!r}"
-            )
+            raise ValueError(f"--init contains non‑numeric values: {pair!r}")
         if lo_f > hi_f:
-            raise ValueError(
-                f"--init pair #{i} has lo > hi: {lo_f} > {hi_f}"
-            )
+            raise ValueError(f"--init lower bound > upper bound: {pair!r}")
         out.append([lo_f, hi_f])
-    if len(out) == 0:
+    if not out:
         raise ValueError("--init parsed to an empty list of ranges")
     return out
 
 
 def require_path(path_str, flag_name="--log"):
+    """Ensure that path_str is a .lg file and its parent directory exists."""
     if path_str is None or str(path_str).strip() == "":
-        die(f"Missing {flag_name}.",
-            hint=f"Provide a valid path via {flag_name}=<file>.")
-
-    # Ensure parent directory exists (if one is specified)
+        die(f"Missing {flag_name}.", hint=f"Provide a valid path via {flag_name}=<file>.")
     parent = os.path.dirname(os.path.abspath(path_str))
     if parent and not os.path.isdir(parent):
         die(f"Directory does not exist for {flag_name}: {parent!r}.",
             hint="Create the directory or change the path.")
-
-    # Enforce file extension
     if not str(path_str).endswith(".lg"):
         die(f"Invalid file type for {flag_name}: {path_str!r}.",
             hint="The log file must use the .lg extension.")
-
     return path_str
+
 
 def require_int(val_str, flag_name, min_value=None, max_value=None):
     if val_str is None:
-        die(f"Missing {flag_name}.",
-            hint=f"Provide an integer via {flag_name}=<int>.")
+        die(f"Missing {flag_name}.", hint=f"Provide an integer via {flag_name}=<int>.")
     try:
         v = int(val_str)
     except Exception:
@@ -172,10 +110,10 @@ def require_int(val_str, flag_name, min_value=None, max_value=None):
         die(f"{flag_name} must be <= {max_value} (got {v}).")
     return v
 
+
 def require_float(val_str, flag_name, min_value=None, max_value=None):
     if val_str is None:
-        die(f"Missing {flag_name}.",
-            hint=f"Provide a number via {flag_name}=<float>.")
+        die(f"Missing {flag_name}.", hint=f"Provide a number via {flag_name}=<float>.")
     try:
         v = float(val_str)
     except Exception:
@@ -186,53 +124,22 @@ def require_float(val_str, flag_name, min_value=None, max_value=None):
         die(f"{flag_name} must be <= {max_value} (got {v}).")
     return v
 
-def require_op(op_str):
-    """
-    Accept symbols or words; normalize to the word form used by TrajSafety:
-      lt (<), le (<=), gt (>), ge (>=), eq (==), ne (!=)
-    """
-    if op_str is None:
-        die("Missing --op.", hint="Use one of: <, <=, >, >=, ==, !=, lt, le, gt, ge, eq, ne")
-
-    s = op_str.strip().lower()
-    alias = {
-        "<": "lt", "<=": "le", ">": "gt", ">=": "ge", "==": "eq", "!=": "ne",
-        "lt": "lt", "le": "le", "gt": "gt", "ge": "ge", "eq": "eq", "ne": "ne",
-    }
-    if s not in alias:
-        die(f"Invalid --op: {op_str!r}.",
-            hint="Allowed: <, <=, >, >=, ==, != or lt, le, gt, ge, eq, ne")
-    return alias[s]
-
 
 def require_mode(mode_str):
-    """
-    Require --mode to be either 'equation' or 'ann' (case-insensitive).
-    Returns normalized lowercase value.
-    """
     if mode_str is None:
-        die("Missing --mode.",
-            hint='Use --mode=equation or --mode=ann')
-    mode_norm = mode_str.strip().lower()
-    if mode_norm not in {"equation", "ann"}:
-        die(f"Invalid --mode: {mode_str!r}.",
-            hint='Allowed values: "equation" or "ann"')
-    return mode_norm
+        die("Missing --mode.", hint='Use --mode=equation or --mode=ann')
+    m = mode_str.strip().lower()
+    if m not in {"equation", "ann"}:
+        die(f"Invalid --mode: {mode_str!r}.", hint='Allowed values: "equation" or "ann"')
+    return m
 
 
 def require_model(model_str, mode):
-    """
-    Require --model_path to exist and have extension based on mode
-      - ann       -> .h5
-      - equation  -> .txt
-    """
     if model_str is None or str(model_str).strip() == "":
-        die("Missing --model_path.",
-            hint="Provide a path via --model_path=<file> matching the mode.")
+        die("Missing --model_path.", hint="Provide a path via --model_path=<file> matching the mode.")
     path = os.path.abspath(model_str)
     if not os.path.isfile(path):
-        die(f"--model_path not found: {model_str!r}.",
-            hint="Check the path and permissions.")
+        die(f"--model_path not found: {model_str!r}.", hint="Check the path and permissions.")
     _, ext = os.path.splitext(path)
     ext = ext.lower()
     if mode == "ann" and ext != ".h5":
@@ -242,46 +149,53 @@ def require_model(model_str, mode):
     return path
 
 
-
-# ---------- main ----------
 if __name__ == '__main__':
     args = docopt(__doc__)
 
-    log = require_path(args['--log'], "--log")
+    # Extract common CLI values
+    log_arg = args['--log']
     mode = require_mode(args['--mode'])
     model_path = require_model(args['--model_path'], mode)
-    if args['--states']:
-        states = args['--states'].split(',')
-    else:
-        states = None
-    if args['--constraints']:
-        constraints = args['--constraints']
-    else:
-        constraints = None
+    states = args['--states'].split(',') if args['--states'] else None
+    constraints = args['--constraints'] if args['--constraints'] else None
 
+    # For ANN mode, require both state names and constraints
+    if mode == 'ann':
+        if not states:
+            die("Missing --states for ann mode.", hint="Provide state names via --states=<name1,name2,...>.")
+        if args['checkSafety'] and not constraints:
+            die("Missing --constraints for ann mode.", hint="Provide constraints via --constraints=<json or list>.")
+
+    # Interpret --log depending on the command
+    if args['behavior']:
+        # Behavior uses a directory; no .lg suffix is required
+        log = log_arg
+    else:
+        # generateLog and checkSafety require a .lg log file
+        log = require_path(log_arg, "--log")
+
+    # Create the System instance
     my_sys = System(log, mode, model_path, states, constraints)
-    
 
+    # Dispatch to the appropriate command with consistent error handling
     if args['behavior']:
         init = parse_initset(args['--init'])
         timestamp = require_int(args['--timestamp'], "--timestamp", min_value=0)
-        my_sys.behaviour(init, timestamp)
-        
-
+        try:
+            my_sys.behaviour(init, timestamp)
+            ok("Behavior generation completed.")
+        except Exception as e:
+            die(f"Behavior generation failed: {e!r}", hint="Check your inputs and file permissions.")
     elif args['generateLog']:
         init = parse_initset(args['--init'])
         timestamp = require_int(args['--timestamp'], "--timestamp", min_value=0)
         prob = require_float(args['--prob'], "--prob", min_value=0)
         dtlog = require_float(args['--dtlog'], "--dtlog", min_value=0)
-
-        
-        """ try:
+        try:
             my_sys.generateLog(init, timestamp, prob, dtlog)
+            ok("Log generation completed.")
         except Exception as e:
-            die(f"Log generation failed: {e!r}",
-                hint="Check your inputs and file permissions.") """
-        my_sys.generateLog(init, timestamp, prob, dtlog)
-
+            die(f"Log generation failed: {e!r}", hint="Check your inputs and file permissions.")
     elif args['checkSafety']:
         try:
             my_sys.checkSafety()
@@ -290,6 +204,6 @@ if __name__ == '__main__':
             die(f"Safety check failed: {e!r}",
                 hint="Verify the log file exists and input parameters are correct.")
     else:
-        warn("No command provided. Use 'generateLog' or 'checkSafety'.")
+        warn("No command provided. Use 'behavior', 'generateLog' or 'checkSafety'.")
         print(__doc__)
         sys.exit(1)

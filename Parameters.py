@@ -28,22 +28,6 @@ VIZ_PER_COVERAGE=20
 VIZ = True
 
 '''
-PROBABILITY_LOG=11
-DT=0.01
-DELTA_STATE=0.004
-DELTA_LOG=0.2
-'''
-
-
-'''
-PROBABILITY_LOG=5
-DT=0.01
-DELTA_STATE=0.002
-DELTA_LOG=0.02
-'''
-
-
-'''
 Colors for terminal messages
 '''
 class msg:

@@ -34,7 +34,7 @@ python -c "import numpy,scipy,mpmath,tqdm,mpl_toolkits;print('All dependencies i
 Set the project root (so imports like `from lib.Equation import Equation` work):
 
 ```bash
-export MNTR_BB_ROOT_DIR=/path/to/Posto/
+export POSTO_ROOT_DIR=/path/to/Posto/
 ```
 
 Add the above line to `~/.bashrc` or `~/.zshrc` to persist.

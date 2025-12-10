@@ -1,0 +1,32 @@
+{
+  "state_vars": [
+    "x",
+    "y"
+  ],
+
+  "constants": {
+    "dt": 0.01,
+    "mu": 1.0
+  },
+
+  "ranges": {
+    "ep": [
+      0.0,
+      0.004
+    ]
+  },
+
+  "equations": {
+    "x'": "x + dt * y + ep",
+    "y'": "y + dt * (mu  * (1 - x*x) * y - x) + ep"
+  },
+
+  "safety_constraints": [
+    {
+      "state": "y",
+      "op": "ge",
+      "const": 2.78
+    }
+  ]
+}
+

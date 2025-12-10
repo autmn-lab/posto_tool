@@ -1,10 +1,9 @@
 import os,sys,copy
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import time
 import ast
 import json
 
-PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
+PROJECT_ROOT = os.environ['POSTO_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
 
 from Parameters import *
@@ -17,7 +16,6 @@ from lib.Equation import *
 from lib.ANN import *
 from concurrent.futures import ProcessPoolExecutor
 
-random.seed(42)
 
 class System:
 
@@ -37,11 +35,12 @@ class System:
         elif mode == "ann":
             self.model = ANN(model_path)
 
-        self.imgdir = os.path.join(os.path.dirname(self.log_path), "img")
+        if os.path.isdir(self.log_path):
+            self.imgdir = os.path.join(self.log_path, "img")
+        else:
+            self.imgdir = os.path.join(os.path.dirname(self.log_path), "img")
 
-        # -------------------------
-        # Shortened constraint logic
-        # -------------------------
+
         self.constraints = constraints
         self.state_names = states
 
@@ -104,6 +103,18 @@ class System:
     
 
     def getRandomTrajs(self,initSet,T,K):
+        
+        import random
+        if self.mode == 'ann':
+            init_points = []
+            for _ in range(K):
+                point = []
+                for dim in initSet:
+                    value = random.uniform(dim[0], dim[1])
+                    point.append(value)
+                init_points.append(point)
+            return self.model.getTrajectories(init_points, T)
+            
         trajs=[]
         for i in range(K):
             point = []                           
@@ -135,6 +146,7 @@ class System:
     
     def behaviour(self, init_set, T):
         start = time.time()
+        os.makedirs(self.imgdir, exist_ok=True)
 
         info("Starting behavior generation...")
         note(f"Initial set: {init_set}")
@@ -142,10 +154,8 @@ class System:
         note(f"Mode: {self.mode}")
         note(f"Model file: {self.model_path}")
         
-        if self.mode=='ann':
-            trajs = self.behaveANN(init_set, T)
-        else:
-            trajs = self.behave(init_set, T)
+        K = 10
+        trajs = self.getRandomTrajs(init_set, T, K)
 
         prefix = "behaviorPair"
         nStates = len(trajs[0][0])
@@ -163,53 +173,11 @@ class System:
         elapsed = time.time() - start
         print(f"{msg.HEADER}[INFO]{msg.ENDC} Time taken: {msg.BOLD}{elapsed:.4f} sec{msg.ENDC}")
 
-    def behave(self, init_set, T):
-
-        trajs = self.getRandomTrajs(init_set, T, 1)
-        return trajs
-            
-    def behaveANN(self, init_set, T):
-        K=1
-        n_states = len(init_set)
-        states = []
-        for i in range(K):
-            point = []
-            for dim in init_set:
-                point.append(random.uniform(dim[0], dim[1]))
-            states.append(point)
-
-       
-        trajs = [[] for _ in range(K)]
-        ann_model = self.model
-
-        for t in range(T):
-            
-            for idx in range(K):
-                trajs[idx].append(tuple(states[idx]))
-
-            try:
-                single_tensors = [ann_model.prepareInput(s) for s in states]
-                x_batch = np.concatenate(single_tensors, axis=0)
-
-                #check if predictions are in order
-                out = ann_model.model.predict(x_batch, verbose=0)
-                out_flat = out.reshape((K, -1))
-                states = [list(map(float, out_flat[i])) for i in range(K)]
-            except Exception:
-                new_states = []
-                for s in states:
-                    ns = ann_model.getNextState(s)
-                    new_states.append(list(ns))
-                states = new_states
-
-        return trajs
-
-        
-
         
     def generateLog(self, init_set, T, prob, dtlog):
 
         start = time.time()
+        os.makedirs(self.imgdir, exist_ok=True)
 
         info("Starting log generation...")
         note(f"Initial set: {init_set}")
@@ -247,7 +215,6 @@ class System:
         print(f"{msg.HEADER}[INFO]{msg.ENDC} Time taken: {msg.BOLD}{elapsed:.4f} sec{msg.ENDC}")
         
 
-
     def readLog(self):  
         logUn = []
         max_t = 0
@@ -265,6 +232,8 @@ class System:
 
 
     def checkSafety(self):
+
+        os.makedirs(self.imgdir, exist_ok=True)
         info("Running safety check...")
         note(f"Log path: {self.log_path}")
         note(f"Mode: {self.mode}")
@@ -306,6 +275,7 @@ class System:
                     return
                 totTrajs += 1
                 valTrajsIt, inValTrajsIt = valTrajObj.getValTrajs(trajs)
+                valTrajs += valTrajsIt
                 print(f"{msg.HEADER}Total Trajectories Generated:{msg.ENDC} "
                     f"{msg.BOLD}{totTrajs * 100}{msg.ENDC} ; "
                     f"{msg.OKCYAN}Valid Trajectories:{msg.ENDC} "
@@ -316,7 +286,6 @@ class System:
                 if unsafe_it:
                     isSafe = False
                     break
-                valTrajs += valTrajsIt
                 if len(valTrajs) >= K:
                     break
         else:

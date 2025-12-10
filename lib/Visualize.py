@@ -1,6 +1,6 @@
 import os,sys,copy
 
-PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
+PROJECT_ROOT = os.environ['POSTO_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
 
 import random
@@ -100,8 +100,8 @@ class Visualize:
 
 
         if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
+            out = os.path.join(self.path, f"{name}.pdf")
+            plt.savefig(out, format="pdf", bbox_inches="tight")
         else:
             plt.show()
         plt.clf()
@@ -138,8 +138,8 @@ class Visualize:
             p = plt.plot(t, [unsafe]*len(t),color='red',linewidth=lnWd,linestyle='dashed')
 
         if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
+            out = os.path.join(self.path, f"{name}.pdf")
+            plt.savefig(out, format="pdf", bbox_inches="tight")
         else:
             plt.show()
         plt.clf()
@@ -191,8 +191,8 @@ class Visualize:
 
 
         if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
+            out = os.path.join(self.path, f"{name}.pdf")
+            plt.savefig(out, format="pdf", bbox_inches="tight")
         else:
             plt.show()
         plt.clf()
@@ -231,8 +231,8 @@ class Visualize:
 
 
         if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
+            out = os.path.join(self.path, f"{name}.pdf")
+            plt.savefig(out, format="pdf", bbox_inches="tight")
         else:
             plt.show()
         plt.clf()
@@ -307,8 +307,8 @@ class Visualize:
                 art3d.pathpatch_2d_to_3d(rect, z=t, zdir="z")
 
             if save:
-                out = os.path.join(self.path, f"pair_{i}_{j}.png")
-                plt.savefig(out, format="png", bbox_inches="tight")
+                out = os.path.join(self.path, f"pair_{i}_{j}.pdf")
+                plt.savefig(out, format="pdf", bbox_inches="tight")
             else:
                 plt.show()
 
@@ -388,8 +388,8 @@ class Visualize:
 
             if save:
                 plt.tight_layout()
-                out = os.path.join(self.path, f"{name_prefix}_{i}_{j}.png")
-                plt.savefig(out, format="png", bbox_inches="tight")
+                out = os.path.join(self.path, f"{name_prefix}_{i}_{j}.pdf")
+                plt.savefig(out, format="pdf", bbox_inches="tight")
             else:
                 plt.tight_layout()
                 plt.show()
@@ -424,8 +424,8 @@ class Visualize:
             ax.plot3D(x, y, t)
 
         if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
+            out = os.path.join(self.path, f"{name}.pdf")
+            plt.savefig(out, format="pdf", bbox_inches="tight")
         else:
             plt.show()
         plt.clf()
@@ -448,7 +448,7 @@ class Visualize:
         ax = plt.axes(projection='3d')
         ax.set_xlabel('x',fontsize=20,fontweight='bold')
         ax.set_ylabel('y',fontsize=20,fontweight='bold')
-        ax.set_zlabel('time',fontsize=8,fontweight='bold')
+        ax.set_zlabel('time',fontsize=8,fontweight='bold',rotation=90)
 
         if logUn!=None:
             for lg in logUn:
@@ -471,8 +471,8 @@ class Visualize:
             ax.plot3D(x, y, t,color='red',alpha=0.3)
     
         if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
+            out = os.path.join(self.path, f"{name}.pdf")
+            plt.savefig(out, format="pdf", bbox_inches="tight")
         else:
             plt.show()
         plt.clf()
@@ -497,8 +497,8 @@ class Visualize:
                 plt.scatter(cList[i], tList[i], s=350, c='red')
         
         if save:
-            out = os.path.join(self.path, f"{name}.png")
-            plt.savefig(out, format="png", bbox_inches="tight")
+            out = os.path.join(self.path, f"{name}.pdf")
+            plt.savefig(out, format="pdf", bbox_inches="tight")
         else:
             plt.show()
         plt.clf()

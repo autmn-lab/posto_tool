@@ -21,6 +21,11 @@
       "state": "x",
       "op": "le",
       "const": -0.10
+    },
+    {
+      "state": "y",
+      "op": "le",
+      "const": -0.10
     }
   ]
 }

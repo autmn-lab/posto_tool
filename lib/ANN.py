@@ -44,3 +44,30 @@ class ANN:
         x = self.prepareInput(state)
         out = self.model.predict(x, verbose=0)
         return tuple(float(v) for v in out.reshape(-1))
+
+    def getTrajectories(self, init_states, T):
+            
+        states = [list(map(float, s)) for s in init_states]
+        K = len(states)
+        trajectories = [[] for _ in range(K)]
+        for _ in range(T):
+            # append current state to each trajectory
+            for idx, st in enumerate(states):
+                trajectories[idx].append(tuple(st))
+            try:
+                print("Here")
+                # build a batch array and predict next states
+                x_batch = [self.prepareInput(st) for st in states]
+                x_batch = np.concatenate(x_batch, axis=0)
+                out = self.model.predict(x_batch, verbose=0)
+                out_flat = out.reshape((K, -1))
+                states = [list(map(float, out_flat[i])) for i in range(K)]
+            except Exception:
+                print("still doing one")
+                # fall back to one‑by‑one prediction if the batch fails
+                new_states = []
+                for st in states:
+                    ns = list(self.getNextState(st))
+                    new_states.append(ns)
+                states = new_states
+        return trajectories

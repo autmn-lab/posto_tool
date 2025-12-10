@@ -1,6 +1,6 @@
 import os,sys,copy
 
-PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
+PROJECT_ROOT = os.environ['POSTO_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
 
 import random

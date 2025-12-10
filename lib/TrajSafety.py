@@ -1,6 +1,6 @@
 import os, sys, copy
 
-PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
+PROJECT_ROOT = os.environ['POSTO_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
 from Parameters import msg
 
@@ -76,24 +76,24 @@ class TrajSafety:
             for (st_idx, op, const) in self.constraints:
                 val = state_vec[st_idx]
                 if op == 'ge' and val >= const:
-                    print(
+                    """ print(
                         f"{msg.FAIL}[Violated]{msg.ENDC} state[{st_idx}] >= {const} at time step {t} (value: {val})"
-                    )
+                    ) """
                     return False, t
                 elif op == 'le' and val <= const:
-                    print(
+                    """ print(
                         f"[{msg.FAIL}Violated]{msg.ENDC} state[{st_idx}] <= {const} at time step {t} (value: {val})"
-                    )
+                    ) """
                     return False, t
                 elif op == 'gt' and val > const:
-                    print(
+                    """ print(
                         f"{msg.FAIL}[Violated]{msg.ENDC} state[{st_idx}] > {const} at time step {t} (value: {val})"
-                    )
+                    ) """
                     return False, t
                 elif op == 'lt' and val < const:
-                    print(
+                    """ print(
                         f"{msg.FAIL}[Violated]{msg.ENDC} state[{st_idx}] < {const} at time step {t} (value: {val})"
-                    )
+                    ) """
                     return False, t
         return True, -1
 

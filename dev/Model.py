@@ -4,12 +4,12 @@
 #Add your imports
 import os,sys,copy
 
-PROJECT_ROOT = os.environ['MNTR_BB_ROOT_DIR']
+PROJECT_ROOT = os.environ['POSTO_ROOT_DIR']
 sys.path.append(PROJECT_ROOT)
 
 import random
 import numpy as np
-from System import *
+from System import System
 
 def my_getNextState(state):
     
