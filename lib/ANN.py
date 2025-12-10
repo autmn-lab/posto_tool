@@ -55,7 +55,6 @@ class ANN:
             for idx, st in enumerate(states):
                 trajectories[idx].append(tuple(st))
             try:
-                print("Here")
                 # build a batch array and predict next states
                 x_batch = [self.prepareInput(st) for st in states]
                 x_batch = np.concatenate(x_batch, axis=0)
@@ -63,7 +62,6 @@ class ANN:
                 out_flat = out.reshape((K, -1))
                 states = [list(map(float, out_flat[i])) for i in range(K)]
             except Exception:
-                print("still doing one")
                 # fall back to one‑by‑one prediction if the batch fails
                 new_states = []
                 for st in states:
