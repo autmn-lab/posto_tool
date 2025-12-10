@@ -203,6 +203,11 @@ sys.behaviour([[0, 1], [0, 1]], T=100)
 sys.generateLog([[0, 1], [0, 1]], T=100, prob=0.5, dtlog=0.1)
 sys.checkSafety()
 ```
+Run the above using the command:
+
+```bash
+python dev/Model.py
+```
 
 ## Required Packages
 - `numpy`  
