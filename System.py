@@ -113,7 +113,7 @@ class System:
                     value = random.uniform(dim[0], dim[1])
                     point.append(value)
                 init_points.append(point)
-            return self.model.getTrajectories(init_points, T)
+            return self.model.getNextState(init_points, T)
             
         trajs=[]
         for i in range(K):
@@ -332,12 +332,6 @@ class System:
                     safeTrajs, logUn, bounds,
                     state_idx, save=True,
                     name=f"SafeTrajs_state{state_idx}"
-                )
-                viz.vizTrajsSafeUnsafe2D(
-                    [safeTrajs[0]], None,
-                    safeSamps, None,
-                    bounds, state_idx, save=True,
-                    name=f"SafeUnsafeTrajs_state{state_idx}"
                 )
             elif unsafeTrajs:
                 viz.vizTrajsVal2D(

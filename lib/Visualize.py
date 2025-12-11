@@ -102,6 +102,7 @@ class Visualize:
         if save:
             out = os.path.join(self.path, f"{name}.pdf")
             plt.savefig(out, format="pdf", bbox_inches="tight")
+            plt.show()
         else:
             plt.show()
         plt.clf()
@@ -140,6 +141,7 @@ class Visualize:
         if save:
             out = os.path.join(self.path, f"{name}.pdf")
             plt.savefig(out, format="pdf", bbox_inches="tight")
+            plt.show()
         else:
             plt.show()
         plt.clf()
@@ -193,6 +195,7 @@ class Visualize:
         if save:
             out = os.path.join(self.path, f"{name}.pdf")
             plt.savefig(out, format="pdf", bbox_inches="tight")
+            plt.show()
         else:
             plt.show()
         plt.clf()
@@ -233,6 +236,7 @@ class Visualize:
         if save:
             out = os.path.join(self.path, f"{name}.pdf")
             plt.savefig(out, format="pdf", bbox_inches="tight")
+            plt.show()
         else:
             plt.show()
         plt.clf()
@@ -313,7 +317,6 @@ class Visualize:
                 plt.show()
 
             plt.clf()
-            plt.close(fig)
 
 
     def vizTrajLog(self, trajs, logUn, save=False, name_prefix="traj_log_pair"):
@@ -387,14 +390,12 @@ class Visualize:
                 ax.plot(xs, ys, zs, linewidth=1.5, color='blue')
 
             if save:
-                plt.tight_layout()
                 out = os.path.join(self.path, f"{name_prefix}_{i}_{j}.pdf")
                 plt.savefig(out, format="pdf", bbox_inches="tight")
+                plt.show()
             else:
-                plt.tight_layout()
                 plt.show()
             plt.clf()
-            plt.close(fig)
     
     
     def vizTrajs(self,s1,s2,trajs,logUn=None,save=False,name="Untitled"):
@@ -426,85 +427,7 @@ class Visualize:
         if save:
             out = os.path.join(self.path, f"{name}.pdf")
             plt.savefig(out, format="pdf", bbox_inches="tight")
+            plt.show()
         else:
             plt.show()
         plt.clf()
-
-
-
-
-
-
-
-    #UNUSED FUNCTIONS
-        
-    def vizTrajsVal(self, trajsVal,trajsInVal,logUn=None,save=False,name="Untitled"):
-
-        if self.viz == False:
-            print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
-            f"Set {self.msg.BOLD}VIZ=True{self.msg.ENDC} to enable.")
-            return
-
-        ax = plt.axes(projection='3d')
-        ax.set_xlabel('x',fontsize=20,fontweight='bold')
-        ax.set_ylabel('y',fontsize=20,fontweight='bold')
-        ax.set_zlabel('time',fontsize=8,fontweight='bold',rotation=90)
-
-        if logUn!=None:
-            for lg in logUn:
-                wd=abs(lg[0][0][1]-lg[0][0][0])
-                ht=abs(lg[0][1][1]-lg[0][1][0])
-                p = plt.Rectangle((lg[0][0][0], lg[0][1][0]), wd, ht, facecolor='none', edgecolor='black',linewidth=0.4,alpha=0.5)
-                ax.add_patch(p)
-                art3d.pathpatch_2d_to_3d(p, z=lg[1], zdir="z")
-
-        for traj in trajsVal:
-            x=[p[0] for p in traj]
-            y=[p[1] for p in traj]
-            t=list(range(0,len(traj)))
-            ax.plot3D(x, y, t,color='blue')
-
-        for traj in trajsInVal:
-            x=[p[0] for p in traj]
-            y=[p[1] for p in traj]
-            t=list(range(0,len(traj)))
-            ax.plot3D(x, y, t,color='red',alpha=0.3)
-    
-        if save:
-            out = os.path.join(self.path, f"{name}.pdf")
-            plt.savefig(out, format="pdf", bbox_inches="tight")
-        else:
-            plt.show()
-        plt.clf()
-
-    def vizVaryC(self, cList, sList, tList, save=False, name="Untitled"):
-
-        if self.viz == False:
-            print(f"{self.msg.WARNING}[WARN]{self.msg.ENDC} Graphical visualization disabled. "
-            f"Set {self.msg.BOLD}VIZ=True{self.msg.ENDC} to enable.")
-            return
-
-        plt.xlabel(r'$c$',fontsize=20,fontweight = 'bold')
-        plt.ylabel(r'Time taken',fontsize=20,fontweight = 'bold')
-        L=len(cList)
-        
-        plt.plot(cList,tList,linewidth=5,linestyle='dashed')
-
-        for i in range(L):
-            if sList[i]==True:
-                plt.scatter(cList[i], tList[i], s=350, c='green')
-            else:
-                plt.scatter(cList[i], tList[i], s=350, c='red')
-        
-        if save:
-            out = os.path.join(self.path, f"{name}.pdf")
-            plt.savefig(out, format="pdf", bbox_inches="tight")
-        else:
-            plt.show()
-        plt.clf()
-
-
-    
-
-
-    

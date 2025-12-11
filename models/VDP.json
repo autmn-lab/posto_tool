@@ -13,12 +13,16 @@
     "ep": [
       0.0,
       0.004
+    ],
+    "ep_mu": [
+      0.0,
+      0.01
     ]
   },
 
   "equations": {
     "x'": "x + dt * y + ep",
-    "y'": "y + dt * (mu  * (1 - x*x) * y - x) + ep"
+    "y'": "y + dt * (((mu + ep_mu) * (1 - x*x) * y) - x) + ep"
   },
 
   "safety_constraints": [

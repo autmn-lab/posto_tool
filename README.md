@@ -209,7 +209,14 @@ Run the above using the command:
 python dev/Model.py
 ```
 
+Run the above using the command:
+
+```bash
+python dev/Model.py
+```
+
 ## Required Packages
+
 - `numpy`  
 - `scipy`  
 - `mpmath`  

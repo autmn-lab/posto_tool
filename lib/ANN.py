@@ -40,12 +40,12 @@ class ANN:
             )
         raise ValueError(f"unsupported input shape {shape}")
 
-    def getNextState(self, state):
+    def getSingleState(self, state):
         x = self.prepareInput(state)
         out = self.model.predict(x, verbose=0)
         return tuple(float(v) for v in out.reshape(-1))
 
-    def getTrajectories(self, init_states, T):
+    def getNextState(self, init_states, T):
             
         states = [list(map(float, s)) for s in init_states]
         K = len(states)
@@ -65,7 +65,7 @@ class ANN:
                 # fall back to one‑by‑one prediction if the batch fails
                 new_states = []
                 for st in states:
-                    ns = list(self.getNextState(st))
+                    ns = list(self.getSingleState(st))
                     new_states.append(ns)
                 states = new_states
         return trajectories
