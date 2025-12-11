@@ -1,155 +1,202 @@
-# Posto: Probabilistic Safety Monitoring — **Full User Guide**
+# Posto: Probabilistic Safety Monitoring — User Guide
 
 ---
 
-## Introduction — What Posto Does and How It Works
+## What Posto Does
 
-**Posto** helps you answer: *“Given uncertainty, does my system stay within safety limits?”*  
-It does this in three layers:
+Posto lets you check if a dynamical system remains safe under uncertainty by:
 
-1. **Trajectory simulation** — Starting from an **initial set** (a box for each state), Posto evolves the system forward for `T` steps using either:
-   - **Equation mode**: update rules written as equations; or
-   - **ANN mode**: a neural network that predicts next state.
-2. **Uncertain logging** — Instead of logging a single point, Posto records each observed state as an **interval** `[lo, hi]` (width controlled by `--dtlog`). You may also **probabilistically downsample** logs with `--prob` to emulate partial observability.
-3. **Safety evaluation** — Posto reads **all constraints** from your **model JSON** and decides if the trajectory (or set of trajectories) ever violates any constraint. Internally, Posto can leverage **Jeffreys Bayes Factor (JFBF)** to adaptively determine when enough evidence exists to declare **SAFE** or **UNSAFE** with confidence.
+1. **Simulating trajectories**
+   - **Equation mode**: next state from equations in a JSON file.
+   - **ANN mode**: next state from a trained neural network (`.h5`).
 
-### Key notions at a glance
+2. **Generating uncertain logs**
+   - From a single simulated trajectory.
+   - Each logged value is replaced by an interval `[lo, hi]` of fixed half-width `--dtlog`.
+   - Only a random subset of time steps (probability `--prob%`) are logged, plus always `t = 0`.
 
-- **State**: vector [x, y, z, …] at a time step.  
-- **Equation update**: computes next state from current state and constants/noise.  
-- **Uncertainty**: injected as small random perturbations (e.g., `ep_x ∈ [-0.005, 0.005]`) and as **log‑interval width** (`--dtlog`).  
-- **Constraint**: a rule like `x ≥ 10`, `y ≤ -8`, etc. Posto enforces **all** constraints from the JSON (logical OR of violations).  
-- **Verdict**: *SAFE* if **no** constraint is violated; *UNSAFE* if **any** constraint is violated at any logged time.
+3. **Checking safety**
+   - Safety constraints are read from a JSON file (`safety_constraints`).
+   - Both **log samples** and **simulated trajectories consistent with the log** are checked.
+   - Output is SAFE / UNSAFE plus plots.
 
 ---
 
 ## Installation & Environment
 
-```bash
-# Python ≥ 3.9 recommended
-pip install numpy scipy mpmath tqdm matplotlib
-python -c "import numpy,scipy,mpmath,tqdm,mpl_toolkits;print('All dependencies installed successfully')"
-```
+### Python Dependencies
 
-Set the project root (so imports like `from lib.Equation import Equation` work):
+Install the libraries actually used by this codebase:
 
 ```bash
-export POSTO_ROOT_DIR=/path/to/Posto/
+pip install numpy matplotlib docopt tensorflow
 ```
 
-Add the above line to `~/.bashrc` or `~/.zshrc` to persist.
-
-**Repo layout (typical):**
+You can also use keras directly instead of tensorflow; the code tries:
 
 ```
-Posto/
-├─ posto.py                # CLI entry
-├─ System.py               # Core orchestrator
-├─ Model.py                # (Optional) user-defined getNextState()
-├─ lib/
-│  ├─ Equation.py          # Equation engine
-│  ├─ ANN.py               # Neural-net engine
-│  ├─ GenLog.py            # Uncertain log builder
-│  ├─ TrajSafety.py        # Safety classification utilities
-│  ├─ JFBF.py              # Bayes factor logic (sampling/stop)
-│  └─ Visualize.py         # 2D/3D plotting
-└─ models/                 # Your model JSONs
+from tensorflow.keras.models import load_model
+# falls back to:
+from keras.models import load_model
 ```
 
 ---
 
-## Model JSON (Equation Mode) — **Spec & Example**
+### Environment Variable: POSTO_ROOT_DIR
 
-**File**: `models/example_system.json`
+Many modules expect the project root via:
+
+```
+PROJECT_ROOT = os.environ['POSTO_ROOT_DIR']
+sys.path.append(PROJECT_ROOT)
+```
+
+Set it once:
+
+```
+export POSTO_ROOT_DIR=/absolute/path/to/Posto
+```
+
+Add this export to your `~/.bashrc` file to make it permanent.
+
+---
+
+## Repository Layout
+
+```
+Posto/
+├─ posto.py
+├─ System.py
+├─ Parameters.py
+├─ artEval.py
+├─ art/
+│  ├─ figA2a
+│  │   └─ img
+│  ├─ figA2b
+│  │   └─ genTimePlot.py
+│  ├─ figA2c
+│  │   └─ confidence.py
+│  ├─ figA3a
+│  │   └─ img
+│  ├─ figA3b
+│  │   └─ img
+│  ├─ figA3c
+│  │   └─ img
+│  ├─ figA3d
+│  │   └─ img
+│  ├─ figA4a
+│  │   └─ img
+│  ├─ figA4b
+│  │   └─ img
+│  ├─ figA4c
+│  │   └─ img
+│  ├─ figA4d
+│  │   └─ img
+│  └─ figB5
+│      └─ img
+├─ lib/
+│  ├─ Equation.py
+│  ├─ ANN.py
+│  ├─ GenLog.py
+│  ├─ TrajSafety.py
+│  ├─ TrajValidity.py
+│  ├─ JFBF.py
+│  └─ Visualize.py
+├─ models/
+├─ logs/
+└─ dev/
+   └─ Model.py
+
+```
+
+---
+
+## Model JSON Format (Equation / Constraints)
+
+### Fields
+
+Each model JSON must include:
+
+- `state_vars`
+- `constants` (optional)
+- `ranges` (optional)
+- `equations` (required for equation mode)
+- `safety_constraints` (required for safety)
+
+Example:
 
 ```json
 {
-  "state_vars": ["x", "y", "z"],
-  "constants": {
-    "dt": 0.01,
-    "alpha": 2.0,
-    "beta": 0.5,
-    "gamma": 1.0
-  },
-  "ranges": {
-    "ep_x": [-0.005, 0.005],
-    "ep_y": [-0.002, 0.002],
-    "ep_z": [-0.003, 0.003]
-  },
+  "state_vars": ["x", "y"],
+  "constants": {"dt": 0.01},
+  "ranges": {"ep": [-0.002, 0.002]},
   "equations": {
-    "x'": "x + dt * (alpha * y - beta * x**3) + ep_x",
-    "y'": "y + dt * (beta * x**2 - gamma * z) + ep_y",
-    "z'": "z + dt * (x - y + gamma * z**2) + ep_z"
+    "x'": "x + dt * (-y - (1.5*(x*x) - 0.5*(x*x*x) - 0.5)) + ep",
+    "y'": "y + dt * ((3*x) - y) + ep"
   },
-  "constraints": [
-    { "state": "x", "op": "ge", "const": 10.0 },
-    { "state": "x", "op": "le", "const": -10.0 },
-    { "state": "y", "op": "ge", "const": 8.0 },
-    { "state": "y", "op": "le", "const": -8.0 },
-    { "state": "z", "op": "ge", "const": 12.0 },
-    { "state": "z", "op": "le", "const": -12.0 }
+  "safety_constraints": [
+    { "state": "x", "op": "le", "const": -0.10 },
+    { "state": "y", "op": "le", "const": -0.10 }
   ]
 }
 ```
 
-### Section‑by‑section
+### Safety Constraints Semantics
 
-- **`state_vars`** — ordered names of states. Their **order matters** for indexing downstream (x→0, y→1, z→2).
-- **`constants`** — parameters available in equations (e.g., `dt`, `alpha`, `beta`, `gamma`).  
-- **`ranges`** — symbols you can use as random perturbations inside equations (e.g., `ep_x`). At each step, the engine samples a value uniformly from the given interval.
-- **`equations`** — right‑hand‑side expressions to compute each next state; you can use state names, constants, and range symbols. Pythonic operators apply (`**` for power).
-- **`constraints`** — list of unsafe conditions **automatically enforced** during safety checks. Operators: `lt`, `le`, `gt`, `ge`, `eq`, `ne`.
+Unsafe whenever constraint evaluates *true*:
 
-> **Tip**: Keep noise magnitudes (`ranges`) consistent with your logging width (`--dtlog`); if `ranges` ≪ `dtlog`, the log uncertainty will dominate.
+- `"ge"`: state ≥ c  
+- `"le"`: state ≤ c  
+- `"gt"`: state > c  
+- `"lt"`: state < c  
+
+---
+
+## Command-Line Interface (posto.py)
+
+Commands:
+
+```
+posto.py behavior
+posto.py generateLog
+posto.py checkSafety
+```
+
+### Global Arguments
+
+- `--log=<logfile>`  
+- `--mode=<equation|ann>`  
+- `--model_path=<path>`  
+- `--states=<comma-list>` (optional, required for ANN)  
+- `--constraints=<json>` (optional, required for ANN safety-check)
 
 ---
 
-## Command Reference
+### behavior
 
-### Generate Uncertain Logs
+Simulates multiple trajectories and saves plots under `logdir/img/`.
 
-```bash
-python posto.py generateLog   --log=logs/run_example.lg   --init="[ -0.5, 0.5 ], [ -1.0, 1.0 ], [ -2.0, 2.0 ]"   --timestamp=200   --mode=equation   --model_path=models/example_system.json   --prob=50   --dtlog=0.01
-```
+### generateLog
 
-**Parameters**
+Creates a log `.lg` file with interval uncertainty plus visualizations.
 
-- `--init` — one interval **per state** in the same order as `state_vars`.
-- `--timestamp` — number of steps. Larger values expand the chance of reaching unsafe regions.
-- `--prob` — percent of steps recorded to the log (e.g., 30, 50, 100).  
-- `--dtlog` —  interval attached to each logged scalar value.
+### checkSafety
 
-**Sample log (excerpt)** — `logs/run_example.lg`:
+Performs safety classification:
 
-```
-t=0:  [ -0.010, 0.010 ], [ -0.020, 0.020 ], [ -0.015, 0.015 ]
-t=25: [ 0.234, 0.244 ], [ 0.120, 0.130 ], [ 0.007, 0.017 ]
-t=100:[ 0.850, 0.860 ], [ -0.320, -0.310 ], [ 0.420, 0.430 ]
-t=180:[ 1.100, 1.110 ], [ -0.640, -0.630 ], [ 0.890, 0.900 ]
-```
+1. Check log samples  
+2. Sample valid trajectories consistent with the log  
+3. Jeffreys Bayes Factor decides SAFE vs UNSAFE  
 
-### Check Safety (Multi‑constraint)
-
-```bash
-python posto.py checkSafety   --log=logs/run_example.lg   --mode=equation   --model_path=models/example_system.json
-```
-
-- Reads **all** constraints from the JSON and flags a violation if **any** one fails.
-- Expected OK output:
-
-```
-[INFO] Loaded constraints: 6
-[SUCCESS] System is SAFE (no violations detected).
-```
-
-- Example violation output:
-
-```
-[WARN] Violation detected: state x >= 10.0 at t=176
-[FAIL] System is UNSAFE.
-```
+Plots saved under `logdir/img/`.
 
 ---
+
+## Custom / Dev Mode
+
+`dev/Model.py` shows how to override `getNextState()` manually.
+
+Constraints can be provided as Python tuples.
 
 ## **In‑Depth**: Using `Model.py` for Custom Dynamics
 
@@ -204,12 +251,13 @@ python examples/run_with_model_py.py
 ```python
 # Model.py
 import random
+from System import System
 ALPHA, BETA, GAMMA, DT = 2.0, 0.5, 1.0, 0.01
 
 def get_noise(lo, hi):
     return random.uniform(lo, hi)
 
-def my_xyz_step(state):
+def my_getNext(state):
     """A Python equivalent to the JSON equations"""
     x, y, z = state
     ep_x = get_noise(-0.005, 0.005)
@@ -225,104 +273,25 @@ def my_xyz_step(state):
 **Plug it into `System`**
 
 ```python
-from System import System
-from Model import my_xyz_step
+my_states = ['x', 'y', 'z']
+my_constraints = [(1, 'ge', 0.49),(2, 'le', -0.10) ]
+sys = System(log_path="logs/custom_with_modelpy.lg",states=my_states, constraints=my_constraints)
 
-sys = System(log_path="logs/custom_xyz.lg", mode=None, model_path=None)
-sys.getNextState = my_xyz_step
+# override the engine step
+sys.getNextState = my_getNextState
 
-# 3D init set for (x,y,z)
-init_xyz = [[-0.5, 0.5], [-1.0, 1.0], [-2.0, 2.0]]
-sys.generateLog(init_xyz, T=200, prob=50, dtlog=0.01)
+# generate a log: init set must match state dimension (x, y, z)
+init_box = [[0.0, 0.2], [0.0, 0.2], [0.0, 0.2]]
+sys.behaviour(init_box, T=1000)
+sys.generateLog(init_box, T=2000, prob=2, dtlog=0.02)
+sys.checkSafety()
 ```
 
-> **Note**: When using `Model.py`, constraints are not embedded here. For safety checks you have two options:
->
-> 1) Use a **JSON** model file that contains only the `constraints` block and pass `--model_path` to `checkSafety` so it can read constraints, or  
-> 2) Add a tiny wrapper that supplies constraints to the safety checker programmatically (if your codebase supports it).  
->    The simplest path in your current setup is **(1)** — keep constraints in a JSON and use it for `checkSafety`.
-
-### 5.3 Hybrid pattern: JSON constraints + `Model.py` dynamics
-
-- **Step A**: Keep `models/constraints_only.json` containing just `state_vars` and `constraints` (constants/equations optional).  
-- **Step B**: Generate logs via your `Model.py` step function (as above).  
-- **Step C**: Run safety check pointing to the constraints JSON:
+**Run**
 
 ```bash
-python posto.py checkSafety   --log=logs/custom_xyz.lg   --mode=equation   --model_path=models/constraints_only.json
+python dev/Model.py
 ```
 
-This lets you iterate fast on Python dynamics while centralizing constraints in one place.
-
-### 5.4 Testing your `Model.py` step
-
-```python
-def smoke_test():
-    s = (0.1, -0.2, 0.0)
-    ns = my_xyz_step(s)
-    assert len(ns) == 3 and all(isinstance(v, (int, float)) for v in ns)
-    print("Model.py step OK:", ns)
-
-if __name__ == "__main__":
-    smoke_test()
-```
-
----
-
-## Worked End‑to‑End Example (JSON equations)
-
-**Prepare the model**
-
-- Save the **3‑state** JSON shown earlier as `models/example_system.json`.
-
-**Generate log**
-
-```bash
-python posto.py generateLog   --log=logs/run_example.lg   --init="[ -0.5, 0.5 ], [ -1.0, 1.0 ], [ -2.0, 2.0 ]"   --timestamp=200   --mode=equation   --model_path=models/example_system.json   --prob=50   --dtlog=0.01
-```
-
-**Safety check (uses all JSON constraints)**
-
-```bash
-python posto.py checkSafety   --log=logs/run_example.lg   --mode=equation   --model_path=models/example_system.json
-```
-
-**Expected** (safe case):
-
-```
-[INFO] Loaded constraints: 6
-[SUCCESS] System is SAFE (no violations detected).
-```
-
-**Possible** (unsafe case):
-
-```
-[WARN] Violation detected: state y <= -8.0 at t=172
-[FAIL] System is UNSAFE.
-```
-
----
-
-## Visualization & Tips
-
-**Quick plot of a log**
-
-```python
-from lib.Visualize import Visualize
-viz = Visualize(viz=True, msg=None)
-viz.vizLog("logs/run_example.lg", save=True)  # saves images to your img dir
-```
-
-**Tuning guidelines**
-
-- Increase `--timestamp` to stress the system longer.
-- Increase `--prob` to capture more steps (denser logs).  
-- Match `ranges` noise and `--dtlog` so intervals are informative but not overly wide.
-- Use narrower `--init` boxes to study local behavior; widen to explore robustness.
-
-**Common pitfalls**
-
-- Mismatch between `state_vars` length and `--init` intervals.
-- Using variable names in equations not defined in `state_vars` or `constants`.
-- Oversized `--dtlog` making constraints trivially “violated” by interval overlap.
+### 
 
