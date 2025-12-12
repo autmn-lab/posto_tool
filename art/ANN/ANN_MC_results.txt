@@ -1,0 +1,61 @@
+(a)
+Initial set: [[-1.2, -1.0], [-0.07, 0.07]]
+Time horizon: 30
+Logging probability: 20
+Delta log: 0.004
+
+Behavior Time taken: 10.0262 sec
+Log Time taken: 12.8322 sec
+Safety Time Taken: 946.4032697677612
+Safety: SAFE
+[Trajs] Safe: 1149 Unsafe: 0
+[Log] Safe: 6 Unsafe: 0
+Total Trajectories Generated: 43000 ; Valid Trajectories: 1149
+
+(b)
+Initial set: [[-1.2, -1.0], [-0.07, 0.07]]
+Time horizon: 30
+Logging probability: 20
+Delta log: 0.008
+
+Behavior Time taken: 6.0158 sec
+Log Time taken: 9.8489 sec
+Safety Time Taken: 837.0040242671967
+Safety: SAFE
+[Trajs] Safe: 1146 Unsafe: 0
+[Log] Safe: 7 Unsafe: 0
+Total Trajectories Generated: 37900 ; Valid Trajectories: 1146
+
+(c)
+Initial set: [[-1.2, -1.0], [-0.07, 0.07]]
+Time horizon: 30
+Logging probability: 50
+Delta log: 0.004
+
+Behavior Time taken: 5.5888 sec
+Log Time taken: 8.3666 sec
+Safety Time Taken: 1751.4377303123474
+Safety: SAFE
+[Trajs] Safe: 1150 Unsafe: 0
+[Log] Safe: 18 Unsafe: 0
+Total Trajectories Generated: 63400 ; Valid Trajectories: 1150
+
+(d)
+Initial set: [[-1.2, -1.0], [-0.07, 0.07]]
+Time horizon: 30
+Logging probability: 50
+Delta log: 0.008
+
+Behavior Time taken: 6.7245 sec
+Log Time taken: 9.1151 sec
+Safety Time Taken: 0.0006566047668457031
+Safety: UNSAFE
+[Trajs] Safe: 0 Unsafe: 0
+[Log] Safe: 4 Unsafe: 10
+Total Trajectories Generated: 0 ; Valid Trajectories: 0
+
+
+
+
+
+

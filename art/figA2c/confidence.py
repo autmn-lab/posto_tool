@@ -90,6 +90,7 @@ class confidence:
             isSafe=False
         
         ts=time.time()-ts
+        print(f"{msg.BOLD}Time Taken:{msg.ENDC} {msg.OKCYAN}{ts}{msg.ENDC}")
         if isSafe:
             print(f"{msg.BOLD}Safety:{msg.ENDC} {msg.OKGREEN}{msg.BOLD}SAFE{msg.ENDC}")
         else:

@@ -1,0 +1,10 @@
+{
+  "state_vars": ["p", "v"],
+  "safety_constraints": [
+    {
+      "state_idx": 1,
+      "op": "ge",
+      "const": 0.055
+    }
+  ]
+}
