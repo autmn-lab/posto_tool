@@ -9,10 +9,8 @@ from System import System
 from Parameters import *
 
 def my_getNextState1(state):
-    # Access the ANN via the system object; name depends on the library
-    # Many implementations store the loaded model under sys_obj.model or sys_obj.controller
     x = np.asarray(state, dtype=np.float32).reshape(1, -1)
-    u = float(sys_obj.model.model.predict(x, verbose=0)[0, 0])  # adjust attribute name as needed
+    u = float(sys_obj.model.model.predict(x, verbose=0)[0, 0]) 
     p_cur, v_cur = float(state[0]), float(state[1])
     p_next = p_cur + v_cur
     v_next = v_cur + 0.0015 * u - 0.0025 * math.cos(3.0 * p_cur)
@@ -40,14 +38,14 @@ def my_getNextState2(init_states, T):
 
 # Instantiate the System and let it load the ANN from model_path
 sys_obj = System(
-    log_path=os.path.join('/home/prachi-bhattacharjee/Posto/art/ANN/(d)', 'MCcontroller.lg'),
+    log_path=os.path.join('art/ANN/(d)', 'MCcontroller.lg'),
     mode='ann',
-    model_path='/home/prachi-bhattacharjee/Posto/models/MountainCar_ReluController.h5',
+    model_path='models/MountainCar_ReluController.h5',
     states=['p', 'v'],
-    constraints='/home/prachi-bhattacharjee/Posto/models/constraints_mc.json'
+    constraints='models/constraints_mc.json'
 )
 
-# Override the default state‑update methods
+# Override the default getNextState method
 sys_obj.model.getNextState = my_getNextState2
 # Run simulations as before
 init_box = [[-1.2, -1.0], [-0.07,0.07]]

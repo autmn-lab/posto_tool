@@ -32,7 +32,7 @@ def my_getNextState(state):
 # no mode/model_path: we'll inject our own step function
 my_states = ['x', 'y']
 my_constraints = [(1, 'ge', 0.49)]
-sys = System(log_path="/home/prachi-bhattacharjee/Posto/logs/custom_with_modelpy.lg",states=my_states, constraints=my_constraints)
+sys = System(log_path="logs/custom_with_modelpy.lg",states=my_states, constraints=my_constraints)
 
 # override the engine step
 sys.getNextState = my_getNextState

@@ -80,8 +80,8 @@ python3 posto.py checkSafety --log=logs/model9.lg \
     --mode=equation --model_path=models/model9.json
 
 # Model 10: p ∈ [-25,25], q ∈ [-20,20], r ∈ [-22,22], s ∈ [-15,15]
-python3 posto.py generateLog --log=/home/prachi-bhattacharjee/Posto/logs/model10.lg --init="[[-4.23,-2.23],[0.44,6.44],[-6.47,-4.67],[3.71,4.91]]" --timestamp=60 --mode="equation" --model_path=/home/prachi-bhattacharjee/Posto/models/model10.json --prob=1 --dtlog=0.1
+python3 posto.py generateLog --log=logs/model10.lg --init="[[-4.23,-2.23],[0.44,6.44],[-6.47,-4.67],[3.71,4.91]]" --timestamp=60 --mode="equation" --model_path=models/model10.json --prob=1 --dtlog=0.1
     
-python3 posto.py checkSafety --log=/home/prachi-bhattacharjee/Posto/logs/model11.lg \
-    --mode="equation" --model_path=/home/prachi-bhattacharjee/Posto/models/model11.json
+python3 posto.py checkSafety --log=logs/model11.lg \
+    --mode="equation" --model_path=/models/model11.json
 
