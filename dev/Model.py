@@ -10,6 +10,7 @@ sys.path.append(PROJECT_ROOT)
 import random
 import numpy as np
 from System import System
+from Parameters import *
 
 def my_getNextState(state):
     

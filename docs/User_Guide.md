@@ -69,6 +69,7 @@ Posto/
 ├─ System.py
 ├─ Parameters.py
 ├─ artEval.py
+├─ artEvalNN.py
 ├─ art/
 │  ├─ figA2a
 │  │   └─ img
@@ -92,7 +93,15 @@ Posto/
 │  │   └─ img
 │  ├─ figA4d
 │  │   └─ img
-│  └─ figB5
+│  ├─ figB5
+│  │   └─ img
+│  ├─ figB6a
+│  │   └─ img
+│  ├─ figB6b
+│  │   └─ img
+│  ├─ figB6c
+│  │   └─ img
+│  └─ figB6d
 │      └─ img
 ├─ lib/
 │  ├─ Equation.py
@@ -105,6 +114,7 @@ Posto/
 ├─ models/
 ├─ logs/
 └─ dev/
+   ├─ ModelANN.py
    └─ Model.py
 
 ```
@@ -293,5 +303,5 @@ sys.checkSafety()
 python dev/Model.py
 ```
 
-### 
+
 

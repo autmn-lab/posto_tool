@@ -44,11 +44,6 @@ sys_obj = System(
     states=['p', 'v'],
     constraints='models/constraints_mc.json'
 )
-
 # Override the default getNextState method
 sys_obj.model.getNextState = my_getNextState2
-# Run simulations as before
-init_box = [[-1.2, -1.0], [-0.07,0.07]]
-sys_obj.behaviour(init_box, T=30)
-sys_obj.generateLog(init_box, T=30, prob=40, dtlog=0.008)
-sys_obj.checkSafety()
+

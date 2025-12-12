@@ -65,4 +65,26 @@ To elaborate on the sources of stochasticity, the following factors contribute t
         python artEval.py --fig=B5 
         ```
 
-        
+   
+   2. **To recreate figs. B.7(a)-(d) perform the following steps:**
+   
+      1. Make sure you are in location `/path/to/Posto`
+   
+         * ```bash
+           cd /path/to/Posto
+           ```
+   
+      2. Run the following command if the location is not added to the `~/.bashrc`
+   
+         * ```bash
+           export POSTO_ROOT_DIR=/path/to/Posto
+           ```
+   
+      3. Run the `artEval.py` with the figure number as the argument to recreate the desired figure
+   
+         * ```bash
+           #Choose from B6a, B6b, B6d, B6c
+           python artEvalNN.py --fig=B6a 
+           ```
+   
+           
