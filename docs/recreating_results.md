@@ -9,6 +9,83 @@ To elaborate on the sources of stochasticity, the following factors contribute t
 1. Although the same parameters (logging probability and log noise) are used to generate the logs, the logs themselves are _random_, though stochastically equivalent, as they are derived from the same distribution.
 2. Additionally, the safety verification process is inherently stochastic, meaning that safety inferences could vary across different iterations. 
 
+### Installation & Environment
+
+#### Python Dependencies
+
+Install the libraries actually used by this codebase:
+
+```bash
+pip install numpy matplotlib docopt tensorflow
+```
+
+You can also use keras directly instead of tensorflow; the code tries:
+
+```
+from tensorflow.keras.models import load_model
+# falls back to:
+from keras.models import load_model
+```
+
+---
+
+#### Environment Variable: POSTO_ROOT_DIR
+
+Many modules expect the project root via:
+
+```
+PROJECT_ROOT = os.environ['POSTO_ROOT_DIR']
+sys.path.append(PROJECT_ROOT)
+```
+
+Set it once:
+
+```
+export POSTO_ROOT_DIR=/absolute/path/to/Posto
+```
+
+Add this export to your `~/.bashrc` file to make it permanent.
+
+### Running the Posto Artifact (OVA)
+
+This artifact is distributed as a pre-configured VirtualBox virtual machine to ensure full reproducibility of the experimental results reported in the paper.
+
+1. Install Oracle VirtualBox (version 7.0 or later) from the official website: https://www.virtualbox.org/wiki/Downloads Please ensure that the **VirtualBox Extension Pack** corresponding to the same version is also installed.
+
+2. Download the Posto zip from the following link and unzip the contents:
+
+   https://alabama.box.com/s/6gn0u0anx0wm8tavhff21qy7clrjgs5b
+
+3. Open **VirtualBox Manager**
+
+4. Select **File → Import Appliance**
+
+5. Choose the downloaded `.ova` file from the unzipped contents
+
+6. Click **Next**, then **Import**
+
+7. Start the imported virtual machine
+
+No additional configuration or installation is required.
+
+---
+
+#### Posto Location inside the Virtual Machine
+
+After logging into the virtual machine, the Posto tool is located at:
+
+```bash
+~/Desktop/Posto
+```
+
+To access it, open a terminal and run:
+
+```bash
+cd ~/Desktop/Posto
+```
+
+From this directory, all commands described in the paper and appendices (including artifact evaluation scripts) can be executed directly.
+
 ### Recreating Figures
 
 1. **To recreate figs. A.2(a)-(c), A.3(a)-(d), A.4(a)-(d) and B.5 perform the following steps:**

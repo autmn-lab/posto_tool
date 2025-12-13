@@ -121,6 +121,46 @@ Posto/
 
 ---
 
+## Running the Posto Artifact (OVA)
+
+This artifact is distributed as a pre-configured VirtualBox virtual machine to ensure full reproducibility of the experimental results reported in the paper.
+
+1. Install Oracle VirtualBox (version 7.0 or later) from the official website: https://www.virtualbox.org/wiki/Downloads Please ensure that the **VirtualBox Extension Pack** corresponding to the same version is also installed.
+
+2. Download the Posto zip from the following link and unzip the contents:
+
+   https://alabama.box.com/s/6gn0u0anx0wm8tavhff21qy7clrjgs5b
+
+3. Open **VirtualBox Manager**
+
+4. Select **File → Import Appliance**
+
+5. Choose the downloaded `.ova` file from the unzipped contents
+
+6. Click **Next**, then **Import**
+
+7. Start the imported virtual machine
+
+No additional configuration or installation is required.
+
+---
+
+### Posto Location inside the Virtual Machine
+
+After logging into the virtual machine, the Posto tool is located at:
+
+```bash
+~/Desktop/Posto
+```
+
+To access it, open a terminal and run:
+
+```bash
+cd ~/Desktop/Posto
+```
+
+From this directory, all commands described in the paper and appendices (including artifact evaluation scripts) can be executed directly.
+
 ## Model JSON Format (Equation / Constraints)
 
 ### Fields
