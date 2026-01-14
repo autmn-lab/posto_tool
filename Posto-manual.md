@@ -20,9 +20,7 @@ With the increasing autonomous capabilities of cyber-physical systems, the compl
 
 - `Development mode (dev)` – supply a custom Python `getNextState` function without modifying core files.
 
-  
-
-  ![Overview](https://github.com/bineet-coderep/monitor-bb/blob/main/figs/Overview.png)
+![Overview](/home/bineet-ghosh/Downloads/Overview.png)
 
 ## Installation
 
