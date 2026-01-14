@@ -30,7 +30,7 @@ The tool can be used in one of two ways: **(1) via a local installation** or **(
 
 ### 1. Local Installation (Recommended)
 
-### Dependencies
+#### Dependencies
 
 - [`Python 3.9.x`](https://www.python.org/)
 
@@ -93,7 +93,7 @@ The tool can be used in one of two ways: **(1) via a local installation** or **(
 
 * If all the dependencies are correctly installed, the above command should run without any error, and display `All dependencies installed successfully` in the terminal.
 
-##### Downloading the tool
+#### Downloading the tool
 
 1. Once the dependencies are installed, download the repository to your desired location `/path/to/Posto`
 
@@ -157,7 +157,7 @@ From this directory, all commands described in the paper and appendices (includi
 
 ## Recreating Results
 
-The results to be reproduced are described in the [draft](https://github.com/bineet-coderep/monitor-bb/blob/main/docs/draft.pdf). Detailed instructions for recreating these results are provided in **Appendices A and B** (originally proposed in [this paper](https://dl.acm.org/doi/10.1007/978-3-031-95497-9_7))
+The results to be reproduced are described in the [draft](https://github.com/autmn-lab/posto_tool/blob/master/docs/draft.pdf). Detailed instructions for recreating these results are provided in **Appendices A and B** (originally proposed in [this paper](https://dl.acm.org/doi/10.1007/978-3-031-95497-9_7))
 
 ### Jet Model
 
