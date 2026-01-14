@@ -24,10 +24,11 @@ With the increasing autonomous capabilities of cyber-physical systems, the compl
 
   ![Overview](https://github.com/bineet-coderep/monitor-bb/blob/main/figs/Overview.png)
 
-
-  ## 
-
 ## Installation
+
+The tool can be used in one of two ways: **(1) via a local installation** or **(2) by running it in a VirtualBox environment** using the provided OVA file. The detailed steps for each option are outlined below.
+
+### 1. Local Installation (Recommended)
 
 ### Dependencies
 
@@ -82,7 +83,7 @@ With the increasing autonomous capabilities of cyber-physical systems, the compl
   pip install docopt
   ```
 
-#### Verify Installation
+**Verify Installation (optional)**
 
 * To verify if the above dependencies are correctly installed, one can run the following:
 
@@ -92,9 +93,9 @@ With the increasing autonomous capabilities of cyber-physical systems, the compl
 
 * If all the dependencies are correctly installed, the above command should run without any error, and display `All dependencies installed successfully` in the terminal.
 
-### Downloading the tool
+##### Downloading the tool
 
-1. Download the repository to your desired location `/path/to/Posto`
+1. Once the dependencies are installed, download the repository to your desired location `/path/to/Posto`
 
 2. Once the repository is downloaded, the user needs to set the variable `POSTO_ROOT_DIR=` to `/path/to/Posto`. To do so, we recommend adding this to `bashrc` (see **Step 2.1**). For users who do not wish to add it to their `bashrc`, can set the variable each time they open the terminal session to run the tool (see **Step 2.2**). Users choosing step 2.2 are gently reminded to perform this step every time they intend to run the tool.
 
@@ -116,7 +117,7 @@ With the increasing autonomous capabilities of cyber-physical systems, the compl
          export POSTO_ROOT_DIR=/path/to/Posto
          ```
 
-## Running the Posto Artifact (OVA)
+### 2. Using Virtual Box
 
 This artifact is distributed as a pre-configured VirtualBox virtual machine to ensure full reproducibility of the experimental results reported in the paper.
 
@@ -138,9 +139,7 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 
 No additional configuration or installation is required.
 
----
-
-### Posto Location inside the Virtual Machine
+#### Posto Location inside the Virtual Machine
 
 After logging into the virtual machine, the Posto tool is located at:
 
@@ -156,7 +155,48 @@ cd ~/Desktop/Posto
 
 From this directory, all commands described in the paper and appendices (including artifact evaluation scripts) can be executed directly.
 
-## Command-Line Usage
+## Recreating Results
+
+The results to be reproduced are described in the [draft](https://github.com/bineet-coderep/monitor-bb/blob/main/docs/draft.pdf). Detailed instructions for recreating these results are provided in **Appendices A and B** (originally proposed in [this paper](https://dl.acm.org/doi/10.1007/978-3-031-95497-9_7))
+
+### Jet Model
+
+The main results of the Jet Model study are shown in **Figures A.2 and A.3** in the above draft.
+
+Once the tool is downloaded and properly set up, these experimental results can be reproduced using the [`artEval.py`](https://github.com/autmn-lab/posto_tool/blob/master/artEval.py) script. Detailed steps are provided in **Appendix A**.
+
+For example, to recreate the result shown in **Figure A.2a** (and similarly **Figures A.2b, A.2c, …, A.3c, and A.3d**), execute the following command:
+
+```bash
+python artEval.py --fig=A2a
+```
+
+### Van der Pol Oscillator
+
+The main results of the Van der Pol Oscillator study are shown in **Figure A.4** in the above draft.
+
+The experimental results for the Van der Pol Oscillator can be reproduced in a manner similar to the Jet Model case study. Detailed steps are provided in **Appendix A**.
+
+For example, to recreate the result shown in **Figure A.4a**, execute the following command:
+
+```bash
+python artEval.py --fig=A4a
+```
+
+### Mountain Car
+
+We also present additional experiments using a DNN-based controller for the Mountain Car benchmark (details in **Appendix B**).
+
+```bash
+python artEvalNN.py --fig=B6a
+python artEvalNN.py --fig=B6b
+python artEvalNN.py --fig=B6c
+python artEvalNN.py --fig=B6d
+```
+
+
+
+## Other Usage: Command-Line
 
 All operations use:
 ```
@@ -175,7 +215,7 @@ python posto.py <operation> [arguments]
 | `--states=<states>`            | Optional in equation mode; required in ann mode            | Comma-separated list of state variable names. Needed for mapping ANN inputs/outputs. |
 | `--constraints=<constraints>`  | Required in `checkSafety` for ann mode; optional otherwise | Safety constraint specification (JSON file or inline list).  |
 
-## 1. Behavior Mode
+### 1. Behavior Mode
 
 Generate random trajectories and visualise projections.
 
@@ -189,7 +229,8 @@ posto.py behavior \
     [--states=<states>]
 ```
 
-## 2. Generate Log
+###  2. Generate Log
+
 Simulate a single trajectory, apply probabilistic sampling, and store it in a .lg file.
 
 ```
@@ -204,7 +245,8 @@ posto.py generateLog \
     [--states=<states>]
 ```
 
-## 3. Check Safety
+###  3. Check Safety
+
 Evaluate whether logged trajectories satisfy constraints.
 
 ```
@@ -216,7 +258,7 @@ posto.py checkSafety \
     [--constraints=<constraints>]
 ```
 
-## Development Mode
+## Other Usage: Development Mode
 Custom next‑state function without modifying core `Posto` code.
 
 Example:
