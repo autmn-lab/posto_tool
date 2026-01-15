@@ -125,7 +125,7 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 
 2. Download the Posto zip from the following link and unzip the contents:
 
-   https://alabama.box.com/s/6gn0u0anx0wm8tavhff21qy7clrjgs5b
+   https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp
 
 3. Open **VirtualBox Manager**
 
@@ -135,7 +135,9 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 
 6. Click **Next**, then **Import**
 
-7. Start the imported virtual machine
+7. Start the imported virtual machine.
+ 
+8. Use password: **posto123** to log in   
 
 No additional configuration or installation is required.
 
