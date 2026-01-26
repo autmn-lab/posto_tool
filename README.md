@@ -163,7 +163,9 @@ The results to be reproduced are described in the [draft](https://github.com/aut
 
 The main results of the Jet Model study are shown in **Figures A.2 and A.3** in the above draft.
 
-Once the tool is downloaded and properly set up, these experimental results can be reproduced using the [`artEval.py`](https://github.com/autmn-lab/posto_tool/blob/master/artEval.py) script. Detailed steps are provided in **Appendix A**.
+Once the tool is downloaded and properly set up, these experimental results can be reproduced using the [`artEval.py`](https://github.com/autmn-lab/posto_tool/blob/master/artEval.py) script. Detailed steps are provided in **Appendix A**. 
+
+_(Estimated time: 2-15 mins)_
 
 For example, to recreate the result shown in **Figure A.2a** (and similarly **Figures A.2b, A.2c, …, A.3c, and A.3d**), execute the following command:
 
@@ -177,6 +179,8 @@ The main results of the Van der Pol Oscillator study are shown in **Figure A.4**
 
 The experimental results for the Van der Pol Oscillator can be reproduced in a manner similar to the Jet Model case study. Detailed steps are provided in **Appendix A**.
 
+_(Estimated time: 30 mins)_
+
 For example, to recreate the result shown in **Figure A.4a**, execute the following command:
 
 ```bash
@@ -186,6 +190,8 @@ python artEval.py --fig=A4a
 ### Mountain Car
 
 We also present additional experiments using a DNN-based controller for the Mountain Car benchmark (details in **Appendix B**).
+
+_(Estimated time: 30 mins)_
 
 ```bash
 python artEvalNN.py --fig=B6a
