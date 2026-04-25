@@ -145,7 +145,7 @@ From this directory, all commands described in the paper and appendices (includi
         ```
 
    
-   2. **To recreate figs. B.7(a)-(d) perform the following steps:**
+   2. **To recreate figs. B.6(a)-(d) perform the following steps:**
    
       1. Make sure you are in location `/path/to/Posto`
    
