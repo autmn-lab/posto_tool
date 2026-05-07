@@ -1,6 +1,6 @@
 # `Posto` 
 
-<p align="center">   <img src="https://github.com/bineet-coderep/monitor-bb/blob/main/figs/Posto_logo.png" alt="Posto_logo" width="500"/> </p>
+<p align="center">   <img src="https://github.com/autmn-lab/posto_tool/blob/master/Posto_logo.png" alt="Posto_logo" width="500"/> </p>
 
 ## About The Tool
 
