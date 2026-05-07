@@ -1,6 +1,10 @@
 # `Posto` 
 
-<p align="center">   <img src="https://github.com/autmn-lab/posto_tool/blob/master/Posto_logo.png" alt="Posto_logo" width="500"/> </p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/autmn-lab/posto_tool/master/Posto_logo.png" 
+       alt="Posto_logo" 
+       width="500"/>
+</p>
 
 ## About The Tool
 
