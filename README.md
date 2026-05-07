@@ -1,5 +1,7 @@
 # `Posto` 
 
+<p align="center">   <img src="https://github.com/bineet-coderep/monitor-bb/blob/main/figs/Posto_logo.png" alt="Posto_logo" width="500"/> </p>
+
 ## About The Tool
 
 With the increasing autonomous capabilities of cyber-physical systems, the complexity of their models also increases significantly, thus continually posing challenges to existing formal methods for safety verification. In contrast to model checking, monitoring emerges as an effective lightweight, yet practical verification technique capable of delivering results of practical importance with better scalability. Monitoring involves analyzing logs from an actual system to determine whether a specification (such as a safety property) is violated.  Although current monitoring techniques work well in some areas, it has largely been unable to cope with the growing complexity of the models. Monitoring techniques, such as those using reachability methods, may fail to produce results when dealing with complex models like Deep Neural Networks (DNNs). We propose here a novel statistical approach for monitoring that is able to generate results with high probabilistic guarantees. 
@@ -26,9 +28,11 @@ With the increasing autonomous capabilities of cyber-physical systems, the compl
 
 ## Installation
 
-The tool can be used in one of two ways: **(1) Local installation** or **(2) Using Virtual Box** using the provided OVA file. The detailed steps for each option are outlined below.
+The tool can be used in one of two ways: **(1) Local installation (Linux & MacOS)** or **(2) Using Virtual Box (Windows, Linux and MacOS)** using the provided OVA file. The detailed steps for each option are outlined below.
 
-### 1. Local Installation (Recommended)
+### 1. Local Installation (Recommended for Linux & MacOS)
+
+*This option works on both Linux and MacOS. We provide Ubuntu-specific commands below; MacOS users can typically use the corresponding standard equivalents.*
 
 #### Dependencies
 
@@ -105,23 +109,26 @@ The tool can be used in one of two ways: **(1) Local installation** or **(2) Usi
          vi ~/.baschrc
          ```
 
-      2. Once `.bashrc` is opened, please add the location, where the tool was downloaded, to a path variable `POSTO_ROOT_DIR` (This step is crucial to run the tool):
+         1. Note for MacOS: Depending on the shell being used, the equivalent configuration file may be `~/.bash_profile` or `~/.zshrc`.
 
+      2. Once `.bashrc` is opened, please add the location, where the tool was downloaded, to a path variable `POSTO_ROOT_DIR` (This step is crucial to run the tool):
+   
          1. ```shell
             export POSTO_ROOT_DIR=/path/to/Posto
             ```
 
    2. *[Alternate Approach]* Run this command every time a new terminal session is opened to run the tool:
-
+   
       1. ```shell
          export POSTO_ROOT_DIR=/path/to/Posto
          ```
 
-### 2. Using Virtual Box
+### 2. Using Virtual Box (for Windows, Linux, MacOS)
 
 This artifact is distributed as a pre-configured VirtualBox virtual machine to ensure full reproducibility of the experimental results reported in the paper.
 
-1. Install Oracle VirtualBox (version 7.0 or later) from the official website: https://www.virtualbox.org/wiki/Downloads Please ensure that the **VirtualBox Extension Pack** corresponding to the same version is also installed.
+1. Install Oracle VirtualBox (version 7.0 or later) from the official website: [virtualbox.org/wiki/Downloads](https://www.virtualbox.org/wiki/Downloads). Please ensure that the **VirtualBox Extension Pack** corresponding to the same version is also installed.
+   1. Depending on the OS you are using, please download the VirtualBox accordingly. Once the VirtualBox is setup correctly on your OS, the below steps should be the same. Note the `.ova` file itself will be using Ubuntu.
 
 2. Download the Posto zip from the following link and unzip the contents: https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp. On [Zenodo](https://zenodo.org/records/18233568), this file is provide in the `VirtualBox` folder. Note that the size of the file is over 13GB, so kindly account for that download time.
 
@@ -134,7 +141,7 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 6. Click **Next**, then **Import**
 
 7. Start the imported virtual machine.
- 
+
 8. Use password: **posto123** to log in   
 
 No additional configuration or installation is required.
