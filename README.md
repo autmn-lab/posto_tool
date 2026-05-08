@@ -275,6 +275,99 @@ posto.py checkSafety \
     [--constraints=<constraints>]
 ```
 
+#### Example
+
+##### JSON Representation
+
+![model1.json](docs/img/JSON.png)
+
+#### System Behavior
+
+```bash
+python3 posto.py behavior --log=logs/model0.lg --init="[[0.0, 0.2], [0.0, 0.2]]" --timestamp=1000 --mode=equation 
+--model_path=/home/prachi-bhattacharjee/Posto/models/model0.json
+```
+
+##### Example Results
+
+<p align="left">
+  <img src="docs/img/Behavior/terminal.png" width="50%">
+</p>
+
+<p align="center">
+  <img src="docs/img/Behavior/behaviorPair_0_1.png" width="30%">
+</p>
+
+
+
+#### Generate Log
+
+```bash
+python3 posto.py generateLog --log=/home/prachi-bhattacharjee/Posto/logs/model0.lg --init="[[0.0, 0.2], [0.0, 0.2]]" --timestamp=1000 --mode="equation" --model_path=/home/prachi-bhattacharjee/Posto/models/model0.json 
+--prob=3 --dtlog=0.02
+```
+
+##### Example Results
+
+<p align="left">
+  <img src="docs/img/Log/terminal.png" width="50%">
+</p>
+
+
+##### Log File Example 
+
+<p align="left">
+  <img src="docs/img/Log/Log.png" width="50%">
+</p>
+
+##### Without Trajectory Visualization
+
+<p align="center">
+  <img src="docs/img/Log/pair_0_1.png" width="30%">
+</p>
+
+
+##### With Trajectory Visualization
+
+<p align="center">
+  <img src="docs/img/Log/traj_log_pair_0_1.png" width="30%">
+</p>
+
+
+
+#### Check Safety
+
+```bash
+python3 posto.py checkSafety --log=logs/model0.lg --mode=equation 
+--model_path=/home/prachi-bhattacharjee/Posto/models/model0.json
+```
+##### Example Results
+
+##### SAFE
+
+<p align="left">
+  <img src="docs/img/Safe/terminal.png" width="50%">
+</p>
+
+<p align="center">
+  <img src="docs/img/Safe/SafeTrajs_state0.png" width="30%">
+  <img src="docs/img/Safe/SafeTrajs_state1.png" width="30%">
+</p>
+
+
+
+##### UNSAFE
+
+<p align="left">
+  <img src="docs/img/Unsafe/terminal.png" width="50%">
+</p>
+
+<p align="center">
+  <img src="docs/img/Unsafe/SafeUnsafeTrajs_state0.png" width="30%">
+  <img src="docs/img/Unsafe/SafeUnsafeTrajs_state1.png" width="30%">
+</p>
+
+
 ## Other Usage: Development Mode
 Custom next‑state function without modifying core `Posto` code.
 
