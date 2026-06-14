@@ -136,9 +136,9 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 
 2. Download the Posto zip from the following link and unzip the contents:
    
-   **Windows/Linux** - https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp. On [Zenodo](https://zenodo.org/records/18233568), this file is provide in the `VirtualBox` folder. Note that the size of the file is over 13GB, so kindly account for that download time.
+   **Intel / AMD (x86_64)** - https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp. On [Zenodo](https://zenodo.org/records/18233568), this file is provide in the `VirtualBox` folder. Note that the size of the file is over 13GB, so kindly account for that download time.
    
-   **MacOS** - https://alabama.box.com/s/1mxsxgoxlpqdjnku3dvdvwuxi5nb9629. Note that the size of the file is over 6GB, so kindly account for that download time.
+   **Apple Silicon (ARM64)** - https://alabama.box.com/s/1mxsxgoxlpqdjnku3dvdvwuxi5nb9629. Note that the size of the file is over 6GB, so kindly account for that download time.
 
 4. Open **VirtualBox Manager**
 
