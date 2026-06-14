@@ -134,19 +134,23 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 1. Install Oracle VirtualBox (version 7.0 or later) from the official website: [virtualbox.org/wiki/Downloads](https://www.virtualbox.org/wiki/Downloads). Please ensure that the **VirtualBox Extension Pack** corresponding to the same version is also installed.
    1. Depending on the OS you are using, please download the VirtualBox accordingly. Once the VirtualBox is setup correctly on your OS, the below steps should be the same. Note the `.ova` file itself will be using Ubuntu.
 
-2. Download the Posto zip from the following link and unzip the contents: https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp. On [Zenodo](https://zenodo.org/records/18233568), this file is provide in the `VirtualBox` folder. Note that the size of the file is over 13GB, so kindly account for that download time.
+2. Download the Posto zip from the following link and unzip the contents:
+   
+   **Windows/Linux** - https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp. On [Zenodo](https://zenodo.org/records/18233568), this file is provide in the `VirtualBox` folder. Note that the size of the file is over 13GB, so kindly account for that download time.
+   
+   **MacOS** - https://alabama.box.com/s/1mxsxgoxlpqdjnku3dvdvwuxi5nb9629. Note that the size of the file is over 6GB, so kindly account for that download time.
 
-3. Open **VirtualBox Manager**
+4. Open **VirtualBox Manager**
 
-4. Select **File → Import Appliance**
+5. Select **File → Import Appliance**
 
-5. Choose the downloaded `.ova` file from the unzipped contents
+6. Choose the downloaded `.ova` file from the unzipped contents
 
-6. Click **Next**, then **Import**
+7. Click **Next**, then **Import**
 
-7. Start the imported virtual machine.
+8. Start the imported virtual machine.
 
-8. Use password: **posto123** to log in   
+9. Use password: **posto123** to log in   
 
 No additional configuration or installation is required.
 
