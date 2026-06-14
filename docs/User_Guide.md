@@ -128,8 +128,10 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 1. Install Oracle VirtualBox (version 7.0 or later) from the official website: https://www.virtualbox.org/wiki/Downloads Please ensure that the **VirtualBox Extension Pack** corresponding to the same version is also installed.
 
 2. Download the Posto zip from the following link and unzip the contents:
-
-   https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp
+      
+   **Windows/Linux** - https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp
+   
+   **MacOS** - https://alabama.box.com/s/1mxsxgoxlpqdjnku3dvdvwuxi5nb9629
 
 3. Open **VirtualBox Manager**
 
