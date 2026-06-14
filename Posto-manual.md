@@ -134,7 +134,9 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 
 2. Download the Posto zip from the following link and unzip the contents:
 
-   https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp
+   **Windows/Linux** - https://alabama.box.com/s/037ykn3p6w9zhlnwr38sq7uzi6sivxfp
+   
+   **MacOS** - https://alabama.box.com/s/1mxsxgoxlpqdjnku3dvdvwuxi5nb9629
 
 3. Open **VirtualBox Manager**
 
