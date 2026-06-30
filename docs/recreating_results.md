@@ -167,5 +167,5 @@ From this directory, all commands described in the paper and appendices (includi
            #Choose from B6a, B6b, B6d, B6c
            python artEvalNN.py --fig=B6a 
            ```
-   
-           
+
+**NOTE:** For each state variable, Posto plots the evolution of that state with time, so running the commands for Figures A.3, A.4 and B.6 will also produce plots for additional state variables not shown in the manuscript. These follow the same interpretation as the shown figure, just for a different state, and can be closed to move on to the next plot.
