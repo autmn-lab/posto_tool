@@ -152,7 +152,7 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 
 9. Use password: **posto123** to log in   
 
-No additional configuration or installation is required.
+Login Details same for both. No additional configuration or installation is required.
 
 #### Posto Location inside the Virtual Machine
 
@@ -215,7 +215,7 @@ python artEvalNN.py --fig=B6c
 python artEvalNN.py --fig=B6d
 ```
 
-
+**NOTE:** For each state variable, Posto plots the evolution of that state with time, so running the commands for Figures A.3, A.4 and B.6 will also produce plots for additional state variables not shown in the manuscript. These follow the same interpretation as the shown figure, just for a different state, and can be closed to move on to the next plot.
 
 ## Other Usage: Command-Line
 
