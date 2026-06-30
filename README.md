@@ -150,9 +150,9 @@ This artifact is distributed as a pre-configured VirtualBox virtual machine to e
 
 8. Start the imported virtual machine.
 
-9. Use password: **posto123** to log in   
+9. Use password: **posto123** to log in. **NOTE:** The password is the same for both the virtual machines.
 
-Login Details same for both. No additional configuration or installation is required.
+No additional configuration or installation is required.
 
 #### Posto Location inside the Virtual Machine
 
