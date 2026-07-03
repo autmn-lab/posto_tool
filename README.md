@@ -14,19 +14,19 @@ With the increasing autonomous capabilities of cyber-physical systems, the compl
 
 `Posto` provides three main command-line operations:
 
-1. `behavior` – draw multiple random trajectories and visualise system evolution under uncertainty.  
-2. `generateLog` – simulate one trajectory, probabilistically sample it, and save it as a .lg log for later analysis.  
+1. `behavior` – draw multiple random trajectories and visualise system evolution under uncertainty.
+2. `generateLog` – simulate one trajectory, probabilistically sample it, and save it as a `.lg` log for later analysis.
 3. `checkSafety` – verify whether logged trajectories satisfy user-defined safety constraints.
 
 `Posto` supports three model types:
 
-- `Equation mode` – update equations supplied through a `JSON` model.  
+- `Equation mode` – update equations supplied through a JSON model.  
 
-- `ANN mode` – system dynamics represented by a trained `.h5` neural network model.  
+- `ANN mode` – system dynamics represented by a trained `.h5` neural network model.
 
 - `Development mode (dev)` – supply a custom Python `getNextState` function without modifying core files.
 
-  
+
 
   ![Overview](https://github.com/bineet-coderep/monitor-bb/blob/main/figs/Overview.png)
 
