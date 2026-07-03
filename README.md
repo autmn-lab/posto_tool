@@ -281,7 +281,7 @@ posto.py checkSafety \
     [--constraints=<constraints>]
 ```
 
-#### Example
+#### Illustrative Example
 
 ##### JSON Representation
 
