@@ -423,4 +423,4 @@ python dev/Model.py
 - `tensorflow`  
 - `tqdm`
 
-Detailed installation and usage instructions are also available in the [Posto Manual](https://github.com/autmn-lab/posto_tool/blob/master/Posto-manual.md).
+Detailed installation and usage instructions are also available in the [User Guide](https://github.com/autmn-lab/posto_tool/blob/master/docs/User_Guide.md).
