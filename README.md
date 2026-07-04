@@ -422,3 +422,5 @@ python dev/Model.py
 - `docopt`  
 - `tensorflow`  
 - `tqdm`
+
+Detailed installation and usage instructions are also available in the [Posto Manual](https://github.com/autmn-lab/posto_tool/blob/master/Posto-manual.md).
