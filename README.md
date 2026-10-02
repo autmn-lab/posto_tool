@@ -413,8 +413,8 @@ Posto produces one plot per state variable, with the time step on the horizontal
 
 
 <p align="center">
-  <img src="docs/img/Safe/SafeTrajs_state0.png" width="30%">
-  <img src="docs/img/Safe/SafeTrajs_state1.png" width="30%">
+  <img src="docs/img/Safe/SafeTrajs_state0.png" width="20%">
+  <img src="docs/img/Safe/SafeTrajs_state1.png" width="20%">
 </p>
 In the above plots, the colored lines are the valid trajectories, each passing through every record on the log and staying above the threshold. All 1,147 valid trajectories (out of 13,000 generated) are safe, so the system is inferred safe with confidence $c$.
 
