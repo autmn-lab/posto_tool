@@ -342,7 +342,7 @@ The Jet model is specified in a JSON file in which the state variables, noise, d
 The `behavior` command samples initial states uniformly from the initial set $x, y \in [0.8, 1.0]$ and simulates each one for the time horizon $T = 2000$ using the dynamics above (Block 1). The trajectories differ because each starts from a different initial state and receives a random noise $\epsilon$ from within the provided ranges.
 
 ```bash
-python posto.py behavior --log=logs/Jet.lg --init="[[0.8, 1.0], [0.8, 1.0]]" --timestamp=2000 --mode=equation --model_path=models/Jet.json
+python posto.py behavior --log=logs --init="[[0.8, 1.0], [0.8, 1.0]]" --timestamp=2000 --mode=equation --model_path=models/Jet.json
 ```
 
 ###### **Example Results**
