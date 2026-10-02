@@ -325,13 +325,10 @@ The Jet model is specified in a JSON file in which the state variables, noise, d
 
 -  `equations`: the update rule for each state. The primed name (`x'`, `y'`) denotes the value at the next time step ($x_{k+1}$, $y_{k+1}$). 
 
--  `safety_constraints`: the list of unsafe conditions, each defined by 
-
-  - `state`: the monitored state variable
-
-  -  `op`: the comparison operator, one of `ge` ($\geq$), `le` ($\leq$), `gt` ($>$), or `lt` ($<$)
-
-  - `const`: the threshold. 
+- `safety_constraints`: the list of unsafe conditions, each defined by:
+    - `state`: the monitored state variable
+    - `op`: the comparison operator, one of `ge` ($\geq$), `le` ($\leq$), `gt` ($>$), or `lt` ($<$)
+    - `const`: the threshold
 
     The two entries encode $x \leq -0.10$ and $y \leq -0.10$. A trajectory is unsafe if any entry holds at any time step.
 
@@ -378,6 +375,7 @@ Each line of the log stores a time step followed by one interval per state, in t
 <p align="center">
   <img src="docs/img/Log/Log.png" width="50%">
 </p>
+
 Posto also plots the log in 3D, with $x$ and $y$ on the horizontal axes and the time step on the vertical axis. In these plots, the boxes mark all log records and do not indicate safety
 
 ###### Without Trajectory Visualization
@@ -412,6 +410,7 @@ For dynamics that require custom Python code, the **Development Mode** described
 ```bash
 python posto.py checkSafety --log=logs/Jet.lg --mode=equation --model_path=models/Jet.json
 ```
+
 Posto produces one plot per state variable, with the time step on the horizontal axis and the state value on the vertical axis. Black boxes are log records, and the red dashed horizontal line marks the threshold $-0.10$.
 
 ###### Example Results
@@ -453,6 +452,7 @@ In this example, the system is inferred to be unsafe since $x$ intervals of 3 re
   <img src="docs/img/Unsafe/SafeUnsafeTrajs_state0.png" width="30%">
   <img src="docs/img/Unsafe/SafeUnsafeTrajs_state1.png" width="30%">
 </p>
+
 All log records are safe but a valid trajectory shown as the red dashed curve drops below $-0.10$ in $x$ near step 150 and is returned as a counterexample. The blue curve is a safe valid trajectory.
 
 ## Other Usage: Development Mode
