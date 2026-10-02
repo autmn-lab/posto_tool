@@ -352,7 +352,7 @@ python posto.py behavior --log=logs/Jet.lg --init="[[0.8, 1.0], [0.8, 1.0]]" --t
 </p>
 
 <p align="center">
-  <img src="docs/img/Behavior/behaviorPair_0_1.png" width="50%">
+  <img src="docs/img/Behavior/behaviorPair_0_1.png" width="30%">
 </p>
 The plot above shows the resulting trajectories, each shown in a different color with $x$ and $y$ on the x- and y-axes and the time step on the z-axis. For models with more than two state variables, one plot is generated for each pair of states, so any pair can be inspected. The plots are saved in `logs/img`.
 
@@ -389,7 +389,7 @@ The plot shows the log records as brown boxes.
 ###### With Trajectory Visualization
 
 <p align="center">
-  <img src="docs/img/Log/traj_log_pair_0_1.png" width="85%">
+  <img src="docs/img/Log/traj_log_pair_0_1.png" width="30%">
 </p>
 The blue curve in this plot shows the simulated trajectory from which the log has been recorded along with the records denoted with the brown boxes.
 
@@ -409,13 +409,13 @@ Posto produces one plot per state variable, with the time step on the horizontal
 <p align="center">
   <img src="docs/img/Safe/terminal1.png" width="30%">
   <img src="docs/img/Safe/terminal2.png" width="30%">
-</p
-
-
-<p align="center">
-  <img src="docs/img/Safe/SafeTrajs_state0.png" width="20%">
-  <img src="docs/img/Safe/SafeTrajs_state1.png" width="20%">
 </p>
+<p align="center">
+  <img src="docs/img/Safe/SafeTrajs_state0.png" width="30%">
+  <img src="docs/img/Safe/SafeTrajs_state1.png" width="30%">
+</p>
+
+
 In the above plots, the colored lines are the valid trajectories, each passing through every record on the log and staying above the threshold. All 1,147 valid trajectories (out of 13,000 generated) are safe, so the system is inferred safe with confidence $c$.
 
 ##### UNSAFE LOG
