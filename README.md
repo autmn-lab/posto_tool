@@ -306,7 +306,7 @@ Here, $\mathcal{X}$ and $\mathcal{Y}$ are the mass flow and air pressure rise th
 The following diagram shows how Posto works to monitor these dynamical systems.
 
 <p align="center">
-  <img src="docs/img/Arch_Summary.png" width="50%">
+  <img src="docs/img/Architecture.png" width="50%">
 </p>
 
 ###### JSON Representation (I/O Execution Model + Safety Constraints)
